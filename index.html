@@ -1,1 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#080808">
+<title>POWER GYM | Workout Planner</title>
+<style>
+:root{--bg:#73a2f2;--card:#000000;--card2:#222226;--text:#f7f7f8;--muted:#aaaab3;--line:#2b2b30;--orange:#ff8a00;--red:#ff3d22;--green:#168442}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,Helvetica,sans-serif;line-height:1.5}
+header{position:sticky;top:0;z-index:5;background:rgba(8,8,8,.96);border-bottom:1px solid var(--line);padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.brand{font-weight:800;letter-spacing:1.5px;color:var(--red);font-size:1.35rem;white-space:nowrap}.menu{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+button,select,input{font:inherit}button,.navlink{border:0;border-radius:12px;padding:11px 14px;background:var(--card2);color:var(--text);cursor:pointer;text-decoration:none}
+button.primary{background:linear-gradient(110deg,var(--red),var(--orange));font-weight:700}button:focus-visible,a:focus-visible,select:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+main{max-width:1100px;margin:auto;padding:24px 16px 70px}section{margin:28px 0;scroll-margin-top:90px}.hero{padding:28px 22px;border:1px solid var(--line);border-radius:22px;background:radial-gradient(circle at top right,#40150e,transparent 55%),var(--card)}
+h1{font-size:clamp(2rem,6vw,3.2rem);line-height:1.1;margin:0 0 12px}h2{font-size:clamp(1.5rem,4vw,2.1rem);margin:0 0 12px}h3{margin:0 0 10px;font-size:1.25rem}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;min-width:0}.day-card{display:flex;flex-direction:column;gap:12px}.day-label{color:var(--orange);font-weight:700;font-size:.9rem;letter-spacing:.5px}.exercise-list{padding-left:22px;margin:8px 0;color:#eee}.exercise-list li{padding:4px 0}.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:auto}.actions button{flex:1;min-width:130px}
+.pill{display:inline-block;background:#c87023;color:#ffbd75;border-radius:999px;padding:5px 10px;font-size:.85rem}.schedule{display:grid;gap:10px}.schedule-row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;padding:12px;border-bottom:1px solid var(--line)}.schedule-row select{width:100%;padding:12px;border-radius:12px;border:1px solid #444;background:var(--card2);color:var(--text)}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.stat{padding:18px;border:1px solid var(--line);border-radius:16px;background:var(--card)}.stat strong{display:block;font-size:2rem;margin-top:6px}.progress-track{height:12px;border-radius:999px;background:#303035;overflow:hidden;margin-top:12px}.progress-fill{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--orange));transition:width .2s}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px}.weekday{padding:10px 4px;text-align:center;border-radius:12px;background:var(--card2);font-size:.85rem}.weekday.done{background:#176b38}.weekday.rest{color:#c3c3c9}.weekday.today{outline:2px solid var(--orange)}
+.timer-display{font-size:clamp(2.4rem,8vw,4rem);font-weight:800;text-align:center;font-variant-numeric:tabular-nums;margin:12px 0}.timer-controls{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}.field{display:grid;gap:6px;margin:10px 0}.field input{width:100%;padding:12px;border:1px solid #444;border-radius:10px;background:var(--card2);color:var(--text)}
+footer{text-align:center;color:var(--muted);padding:24px;border-top:1px solid var(--line)}
+.small{font-size:.9rem}.notice{border-left:4px solid var(--orange);padding:10px 14px;background:#201a14;border-radius:8px;color:#ddd}
+@media(max-width:700px){header{align-items:flex-start;flex-direction:column}.menu{justify-content:flex-start}.menu button,.menu a{font-size:.85rem;padding:9px}.grid{grid-template-columns:1fr}.stat-grid{grid-template-columns:1fr}.schedule-row{grid-template-columns:1fr;gap:6px}.week{gap:4px}.weekday{font-size:.72rem;padding:8px 2px}main{padding:18px 12px 50px}.card{padding:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">POWER GYM</div>
+  <nav class="menu" aria-label="Main navigation">
+    <a class="navlink" href="#home">Home</a><a class="navlink" href="#workouts">Workouts</a><a class="navlink" href="#schedule">Schedule</a><a class="navlink" href="#progress">Progress</a><a class="navlink" href="#timer">Timer</a>
+  </nav>
+</header>
+<main>
+  <section id="home" class="hero">
+    <span class="pill">YOUR WEEKLY WORKOUT PLAN</span>
+    <h1>Train smart.<br><span style="color:var(--orange)">Get stronger.</span></h1>
+    <p class="muted">Monday and Wednesday are your only rest days. Follow your workout, track your progress, and use safe weights with good form.</p>
+    <h2 id="todayTitle">Today's plan</h2><p id="todayDescription" class="muted"></p>
+    <div class="actions"><button class="primary" id="todayButton">Open today's workout</button><button onclick="document.querySelector('#schedule').scrollIntoView()">View weekly schedule</button></div>
+  </section>
 
+  <section id="workouts">
+    <h2>Workout days</h2><p class="muted">Complete each exercise and tap “Finish workout” when done. Tap “Watch exercise video on YouTube” under any exercise to find a demonstration by a male trainer. Progress is saved on this device.</p>
+    <div id="workoutGrid" class="grid"></div>
+  </section>
+
+  <section id="schedule" class="card">
+    <h2>Weekly schedule</h2><p class="muted">Monday and Wednesday are fixed rest days. Other days have their assigned workout.</p>
+    <div id="scheduleRows" class="schedule"></div>
+    <p class="small muted">Workout days: Tuesday, Thursday, Friday, Saturday and Sunday.</p>
+  </section>
+
+  <section id="progress">
+    <h2>My progress</h2>
+    <div class="stat-grid">
+      <div class="stat"><span class="muted">Workouts completed this week</span><strong id="workoutsDone">0</strong></div>
+      <div class="stat"><span class="muted">Exercises completed this week</span><strong id="exercisesDone">0</strong></div>
+      <div class="stat"><span class="muted">Weekly workout progress</span><strong id="progressPercent">0%</strong><div class="progress-track"><div class="progress-fill" id="progressFill"></div></div></div>
+    </div>
+    <div class="card" style="margin-top:16px"><h3>This week</h3><div id="weekStrip" class="week"></div></div>
+    <div class="card" style="margin-top:16px"><h3>Workout history</h3><div id="history" class="muted">No workouts completed yet.</div><button style="margin-top:14px" id="resetProgress">Reset progress</button></div>
+  </section>
+
+  <section id="timer" class="card">
+    <h2>Workout / rest timer</h2><p class="muted">Set a countdown for your workout or your rest between sets.</p>
+    <div class="field"><label for="timerMinutes">Minutes</label><input id="timerMinutes" type="number" min="0" max="180" value="1"></div>
+    <div class="field"><label for="timerSeconds">Seconds</label><input id="timerSeconds" type="number" min="0" max="59" value="30"></div>
+    <div id="timerDisplay" class="timer-display">01:30</div>
+    <div class="timer-controls"><button class="primary" id="startTimer">Start</button><button id="pauseTimer">Pause</button><button id="resetTimer">Reset</button><button id="quickRest">Set 90-sec rest</button></div>
+    <p id="timerMessage" class="muted" style="text-align:center" aria-live="polite">Ready when you are.</p>
+  </section>
+
+  <section class="notice"><strong>Beginner safety:</strong> Warm up for 5–10 minutes, start with light weights, learn the correct technique, and ask a qualified trainer for help. Stop if you feel sharp pain, dizziness, or feel unwell. Rest and recovery are important.</section>
+</main>
+<footer>POWER GYM · Stay consistent, train safely.</footer>
+<script>
+const days = [
+ {day:"Monday", key:"mon", rest:true},
+ {day:"Tuesday", key:"tue", id:1, title:"CHEST & BICEPS", muscles:"Chest, Biceps", exercises:["Incline Dumbbell Press","Cable Fly High-to-Low","Standing EZ-Bar Curl or Straight-Bar Curl","Spider Curl"]},
+ {day:"Wednesday", key:"wed", rest:true},
+ {day:"Thursday", key:"thu", id:2, title:"BACK & TRICEPS", muscles:"Back, Triceps", exercises:["Wide-Grip Lat Pulldown","Seated Cable Row","Rope Triceps Pushdown","Overhead Triceps Extension"]},
+ {day:"Friday", key:"fri", id:3, title:"SHOULDERS & ABS", muscles:"Shoulders, Abs", exercises:["Dumbbell Shoulder Press","Lateral Raise","Face Pull","Cable Crunch"]},
+ {day:"Saturday", key:"sat", id:4, title:"ARMS", muscles:"Biceps, Triceps, Forearms", exercises:["Preacher Curl","Hammer Curl","Wrist Curl","Rope Pushdown","EZ-Bar Skull Crusher"]},
+ {day:"Sunday", key:"sun", id:5, title:"LEG DAY", muscles:"Legs", exercises:["Leg Press (or Squat)","Leg Extension","Leg Curl","Adductor Machine","Calf Raise"]}
+];
+const STORE="powerGymPlanV1";
+let saved={};
+try{saved=JSON.parse(localStorage.getItem(STORE)||"{}")}catch(e){saved={}}
+saved.doneExercises=saved.doneExercises||{};
+saved.doneWorkouts=saved.doneWorkouts||{};
+saved.history=saved.history||[];
+let activeWorkout=null;
+function persist(){localStorage.setItem(STORE,JSON.stringify(saved));renderProgress()}
+function todayKey(){return ["sun","mon","tue","wed","thu","fri","sat"][new Date().getDay()]}
+function thisWeekKey(){const d=new Date();const monday=new Date(d);monday.setDate(d.getDate()-((d.getDay()+6)%7));return monday.getFullYear()+"-"+String(monday.getMonth()+1).padStart(2,"0")+"-"+String(monday.getDate()).padStart(2,"0")}
+function exKey(day,ex){return thisWeekKey()+"|"+day.key+"|"+ex}
+function workoutDoneKey(day){return thisWeekKey()+"|"+day.key}
+function renderCards(){
+ const root=document.getElementById("workoutGrid");
+ root.innerHTML=days.map(day=>{
+ if(day.rest)return `<article class="card day-card"><div class="day-label">${day.day.toUpperCase()}</div><h3>REST DAY</h3><p class="muted">Recovery, gentle walking, hydration and sleep.</p><span class="pill">Rest</span></article>`;
+ return `<article class="card day-card" id="day-${day.id}"><div class="day-label">${day.day.toUpperCase()} · DAY ${day.id}</div><h3>${day.title}</h3><p class="muted">${day.muscles} · ${day.exercises.length} exercises</p><ol class="exercise-list">${day.exercises.map(ex=>`<li>${escapeHtml(ex)}</li>`).join("")}</ol><p class="small muted">Most exercises: 2–3 sets × 8–12 reps</p><div class="actions"><button class="primary" onclick="openWorkout(${day.id})">Start workout</button><button onclick="openWorkout(${day.id})">View exercises</button></div><div id="active-${day.id}" style="display:none"></div></article>`
+ }).join("");
+}
+function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function openWorkout(id){
+ const day=days.find(d=>d.id===id);if(!day)return;activeWorkout=id;
+ const host=document.getElementById("active-"+id);host.style.display="block";
+ host.innerHTML=`<hr style="border-color:var(--line);margin:18px 0"><h3>Today's checklist</h3><p class="muted small">Choose Leg Press or Squat for the first leg exercise. Use controlled form.</p>${day.exercises.map((ex,i)=>{
+ const chosen=(id===5&&i===0)?`<div class="field"><label for="legChoice">Choose first exercise</label><select id="legChoice" onchange="changeLegExercise(this.value)"><option value="Leg Press">Leg Press</option><option value="Squat">Squat</option></select></div>`:"";
+ const label=(id===5&&i===0)?(saved.legChoice||"Leg Press"):ex;
+ const checked=!!saved.doneExercises[exKey(day,label)];
+ const videoSearch = "https://www.youtube.com/results?search_query=" + encodeURIComponent(label + " exercise tutorial male trainer proper form");
+ return `${chosen}<div style="display:flex;gap:10px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--line)"><input aria-label="Mark exercise complete" type="checkbox" ${checked?"checked":""} onchange="toggleExercise(${id},${i},this.checked)" style="margin-top:6px;transform:scale(1.2)"><div style="flex:1;min-width:0"><strong>${escapeHtml(label)}</strong><br><span class="muted small">${id===4&&i===2?"2 sets × 10–12 reps":id===5&&i>=1&&i<=2?"2–3 sets × 10–12 reps":id===5&&i===4?"2–3 sets × 12 reps":"2–3 sets × 8–12 reps"}</span><br><a href="${videoSearch}" target="_blank" rel="noopener noreferrer" style="display:inline-block;margin-top:8px;color:var(--orange);font-weight:700;text-decoration:none">▶ Watch exercise video on YouTube</a></div></div>`
+ }).join("")}<div class="actions" style="margin-top:16px"><button class="primary" onclick="finishWorkout(${id})">Finish workout</button><button onclick="document.querySelector('#timer').scrollIntoView()">Open timer</button></div>`;
+ if(id===5){const select=host.querySelector("#legChoice");if(select)select.value=saved.legChoice||"Leg Press"}
+ host.scrollIntoView({behavior:"smooth",block:"start"});
+}
+function changeLegExercise(value){saved.legChoice=value;persist();if(activeWorkout===5)openWorkout(5)}
+function toggleExercise(id,index,checked){
+ const day=days.find(d=>d.id===id);let ex=day.exercises[index];if(id===5&&index===0)ex=saved.legChoice||"Leg Press";
+ const key=exKey(day,ex);if(checked)saved.doneExercises[key]=true;else delete saved.doneExercises[key];persist();
+}
+function finishWorkout(id){
+ const day=days.find(d=>d.id===id);saved.doneWorkouts[workoutDoneKey(day)]=true;
+ saved.history.unshift({date:new Date().toLocaleDateString(),name:`Day ${id}: ${day.title}`});saved.history=saved.history.slice(0,30);persist();renderCards();openWorkout(id);
+ alert("Workout marked as completed. Great job!");
+}
+function renderSchedule(){
+ document.getElementById("scheduleRows").innerHTML=days.map(d=>`<div class="schedule-row"><strong>${d.day}</strong><div>${d.rest?'<span class="pill">REST DAY</span>':`<span class="pill">DAY ${d.id}</span> ${d.title}`}</div></div>`).join("");
+ const day=days.find(d=>d.key===todayKey());
+ document.getElementById("todayTitle").textContent=day.rest?`${day.day} — Rest Day`:`${day.day} — Day ${day.id}: ${day.title}`;
+ document.getElementById("todayDescription").textContent=day.rest?"Today is for recovery. Sleep well, eat regular balanced meals and stay hydrated.":`Today's workout has ${day.exercises.length} exercises. Warm up first and use a weight you can control.`;
+ document.getElementById("todayButton").textContent=day.rest?"View workout days":"Open today's workout";
+ document.getElementById("todayButton").onclick=()=>day.rest?document.querySelector("#workouts").scrollIntoView({behavior:"smooth"}):openWorkout(day.id);
+}
+function renderProgress(){
+ const workouts=days.filter(d=>d.id&&saved.doneWorkouts[workoutDoneKey(d)]).length;
+ const exercises=Object.keys(saved.doneExercises).filter(k=>k.startsWith(thisWeekKey()+"|")).length;
+ const pct=Math.round(workouts/5*100);
+ document.getElementById("workoutsDone").textContent=workouts;
+ document.getElementById("exercisesDone").textContent=exercises;
+ document.getElementById("progressPercent").textContent=pct+"%";
+ document.getElementById("progressFill").style.width=pct+"%";
+ document.getElementById("weekStrip").innerHTML=days.map(d=>{const done=d.id&&saved.doneWorkouts[workoutDoneKey(d)];return `<div class="weekday ${d.rest?'rest':''} ${done?'done':''} ${d.key===todayKey()?'today':''}"><strong>${d.day.slice(0,3)}</strong><br>${d.rest?'Rest':done?'✓':"D"+d.id}</div>`}).join("");
+ document.getElementById("history").innerHTML=saved.history.length?saved.history.map(h=>`<p>✓ ${escapeHtml(h.date)} — ${escapeHtml(h.name)}</p>`).join(""):"No workouts completed yet.";
+}
+document.getElementById("resetProgress").onclick=()=>{if(confirm("Reset all saved workout progress on this device?")){saved={doneExercises:{},doneWorkouts:{},history:[],legChoice:"Leg Press"};persist();renderCards()}};
+renderCards();renderSchedule();renderProgress();
+
+// Simple countdown timer
+let remaining=90, interval=null, running=false;
+const display=document.getElementById("timerDisplay");
+function showTimer(){display.textContent=String(Math.floor(remaining/60)).padStart(2,"0")+":"+String(remaining%60).padStart(2,"0")}
+function stopTimer(){if(interval){clearInterval(interval);interval=null}running=false}
+function setTimerFromInputs(){stopTimer();let m=Math.max(0,Math.min(180,Number(document.getElementById("timerMinutes").value)||0));let s=Math.max(0,Math.min(59,Number(document.getElementById("timerSeconds").value)||0));remaining=Math.floor(m*60+s);showTimer();document.getElementById("timerMessage").textContent="Timer ready."}
+document.getElementById("timerMinutes").addEventListener("change",setTimerFromInputs);
+document.getElementById("timerSeconds").addEventListener("change",setTimerFromInputs);
+document.getElementById("startTimer").onclick=()=>{if(running)return;if(remaining<=0)setTimerFromInputs();running=true;document.getElementById("timerMessage").textContent="Timer running…";interval=setInterval(()=>{remaining--;showTimer();if(remaining<=0){stopTimer();document.getElementById("timerMessage").textContent="Time is up!";try{if("vibrate" in navigator)navigator.vibrate([200,100,200])}catch(e){}}},1000)};
+document.getElementById("pauseTimer").onclick=()=>{stopTimer();document.getElementById("timerMessage").textContent="Timer paused."};
+document.getElementById("resetTimer").onclick=()=>{setTimerFromInputs();document.getElementById("timerMessage").textContent="Timer reset."};
+document.getElementById("quickRest").onclick=()=>{stopTimer();remaining=90;document.getElementById("timerMinutes").value=1;document.getElementById("timerSeconds").value=30;showTimer();document.getElementById("timerMessage").textContent="90-second rest ready."};
+showTimer();
+</script>
+</body>
+</html>
