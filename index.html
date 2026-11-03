@@ -242,6 +242,9 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
+
+/* POWER GYM account/profile */
+#gymAccountBtn{white-space:nowrap}#gymAccountModal{position:fixed;inset:0;z-index:100;background:#080809e8;display:none;place-items:center;padding:14px;overflow:auto}#gymAccountModal.open{display:grid}.gym-box{width:min(100%,560px);max-height:92vh;overflow:auto;padding:22px;background:#17171b;border:1px solid #38383f;border-radius:22px;box-shadow:0 24px 70px #000}.gym-box h2{margin-bottom:12px}.gym-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}.gym-form label{display:grid;gap:6px;color:#bbb;font-size:.88rem}.gym-form input,.gym-form select{min-height:44px;padding:9px 12px;border-radius:12px;border:1px solid #444;background:#242429;color:#fff;width:100%}.gym-form .wide{grid-column:1/-1}.gym-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}.gym-actions .btn{flex:1}.gym-note{font-size:.88rem;color:#aaa;margin:10px 0}.gym-admin-row{padding:10px;border-bottom:1px solid #444;display:flex;justify-content:space-between;gap:8px}@media(max-width:450px){.gym-form{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -269,6 +272,11 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
     <span class="brand-name">POWER <span>GYM</span></span>
   </a>
   <nav class="topnav" id="topNav" aria-label="Main navigation"></nav>
+
+<button id="gymAccountBtn" class="btn sm primary" type="button">Account / Login</button>
+<div id="gymAccountModal" aria-hidden="true"><div class="gym-box glass" role="dialog" aria-modal="true" aria-labelledby="gymModalTitle"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2 id="gymModalTitle">POWER GYM ACCOUNT</h2><button id="gymClose" class="btn sm" type="button">Close</button></div><p id="gymAuthStatus" class="gym-note">Create account or login to save your profile.</p>
+<section id="gymAuthPane"><div class="gym-form"><label class="wide">Email<input id="gymEmail" type="email" autocomplete="email" required></label><label class="wide">Password<input id="gymPassword" type="password" autocomplete="current-password" minlength="6" required></label></div><div class="gym-actions"><button id="gymSignup" class="btn primary" type="button">Sign up</button><button id="gymLogin" class="btn" type="button">Login</button></div></section>
+<section id="gymProfilePane" hidden><div class="gym-form"><label class="wide">Display name<input id="gymDisplayName" type="text" maxlength="70"></label><label>Height (cm)<input id="gymHeight" type="number" min="50" max="250" step="0.1"></label><label>Weight (kg)<input id="gymWeight" type="number" min="20" max="400" step="0.1"></label><label>Fitness focus<select id="gymGoal"><option value="general_fitness">General fitness</option><option value="strength">Strength</option><option value="mobility">Mobility</option><option value="healthy_habits">Healthy habits</option></select></label><label>Workout days / week<input id="gymFrequency" type="number" min="1" max="7" value="3"></label><label class="wide">Profile photo<input id="gymPhoto" type="file" accept="image/*"></label></div><div class="gym-actions"><button id="gymSaveProfile" class="btn primary" type="button">Save profile</button><button id="gymLogout" class="btn" type="button">Logout</button></div><div id="gymAdminPane" hidden><h3 style="margin-top:20px">Admin dashboard — profiles</h3><div id="gymAdminList" class="gym-note">Loading…</div></div></section></div></div>
 </header>
 <nav class="tabbar" id="tabBar" aria-label="Quick navigation"></nav>
 
@@ -733,6 +741,22 @@ if ("serviceWorker" in navigator) {
     }
   });
 }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(()=>{const URL="https://xcevtpkrasvevwyvvdjq.supabase.co";const KEY="sb_publishable_C_WZDTvi8dZwZAgKQh6ANA_vJDd6LKH";const client=window.supabase.createClient(URL,KEY);const $=id=>document.getElementById(id);const modal=$("gymAccountModal");let user=null;
+function show(){modal.classList.add("open");modal.setAttribute("aria-hidden","false")}function hide(){modal.classList.remove("open");modal.setAttribute("aria-hidden","true")}function msg(s){$("gymAuthStatus").textContent=s}
+$("gymAccountBtn").onclick=show;$("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
+async function refresh(){const {data:{session}}=await client.auth.getSession();user=session?.user||null;$("gymAuthPane").hidden=!!user;$("gymProfilePane").hidden=!user;$("gymAccountBtn").textContent=user?(user.email||"My profile"):"Account / Login";if(!user){msg("Create account or login to save your profile.");return}msg("Signed in: "+user.email);const {data,error}=await client.from("gym_profiles").select("*").eq("user_id",user.id).maybeSingle();if(error){msg("Profile loading failed: "+error.message);return}if(data){$("gymDisplayName").value=data.display_name||"";$("gymHeight").value=data.height_cm??"";$("gymWeight").value=data.weight_kg??"";$("gymGoal").value=data.goal||"general_fitness";$("gymFrequency").value=data.weekly_frequency||3;if(data.role==="admin"){$("gymAdminPane").hidden=false;loadAdmin()}}}
+$("gymSignup").onclick=async()=>{const email=$("gymEmail").value.trim(),password=$("gymPassword").value;if(!email||password.length<6){msg("Enter email and password (at least 6 characters).");return}const {data,error}=await client.auth.signUp({email,password,options:{data:{display_name:email.split("@")[0]}}});if(error){msg(error.message);return}msg(data.session?"Account created.":"Account created. Check your email to confirm, then login.");await refresh()};
+$("gymLogin").onclick=async()=>{const {error}=await client.auth.signInWithPassword({email:$("gymEmail").value.trim(),password:$("gymPassword").value});if(error){msg(error.message);return}await refresh()};
+$("gymLogout").onclick=async()=>{const {error}=await client.auth.signOut();if(error)msg(error.message);else await refresh()};
+$("gymSaveProfile").onclick=async()=>{if(!user)return;let photo_path=null;const file=$("gymPhoto").files[0];if(file){if(!file.type.startsWith("image/")||file.size>5*1024*1024){msg("Choose an image under 5 MB.");return}const path=user.id+"/"+Date.now()+"-"+file.name.replace(/[^a-zA-Z0-9._-]/g,"_");const up=await client.storage.from("gym-profile-photos").upload(path,file,{upsert:true});if(up.error){msg("Photo upload failed: "+up.error.message);return}photo_path=path}
+const payload={user_id:user.id,display_name:$("gymDisplayName").value.trim(),height_cm:$("gymHeight").value?Number($("gymHeight").value):null,weight_kg:$("gymWeight").value?Number($("gymWeight").value):null,goal:$("gymGoal").value,weekly_frequency:Number($("gymFrequency").value),updated_at:new Date().toISOString()};if(photo_path)payload.photo_path=photo_path;const {error}=await client.from("gym_profiles").upsert(payload,{onConflict:"user_id"});msg(error?"Save failed: "+error.message:"Profile saved successfully.");};
+async function loadAdmin(){const {data,error}=await client.from("gym_profiles").select("user_id,display_name,height_cm,weight_kg,goal,weekly_frequency,role,created_at").order("created_at",{ascending:false});$("gymAdminList").textContent=error?"Admin query error: "+error.message:(data||[]).map(p=>(p.display_name||"Unnamed")+" • "+p.goal+" • "+p.weekly_frequency+" days/week • "+p.role).join("\n")||"No profiles yet";}
+client.auth.onAuthStateChange(()=>setTimeout(refresh,0));refresh();
+})();
 </script>
 </body>
 </html>
