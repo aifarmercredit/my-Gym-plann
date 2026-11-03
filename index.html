@@ -338,6 +338,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
           <button class="btn primary" id="startTimer">Start</button>
           <button class="btn" id="pauseTimer">Pause</button>
           <button class="btn" id="resetTimer">Reset</button>
+          <button class="btn" id="enableTimerNotification" type="button">🔔 Enable notification</button>
         </div>
         <p id="timerMessage" class="muted" aria-live="polite">Ready when you are.</p>
       </div>
@@ -629,9 +630,9 @@ function beep(){
 }
 function tick(){
  const left=Math.max(0,Math.ceil((endAt-Date.now())/1000));
- if(left!==remaining){remaining=left;paintTimer()}
+ if(left!==remaining){remaining=left;paintTimer();updateTimerNotification()}
  if(left<=0){
-  stopTick();tState="done";paintTimer();
+  stopTick();tState="done";paintTimer();updateTimerNotification(true);
   $("#timerDisplay").classList.add("done");tmsg("Time is up! Start your next set.");toast("⏱ Time is up!");beep();
   try{if("vibrate" in navigator)navigator.vibrate([200,100,200])}catch(e){}
  }
@@ -641,12 +642,20 @@ function startTimer(){
  if(remaining<=0||tState==="done"){if(tState==="done")remaining=total;else setFromInputs();}
  if(remaining<=0){tmsg("Set a time above zero first.");return}
  $("#timerDisplay").classList.remove("done");
- endAt=Date.now()+remaining*1000;tState="running";stopTick();tId=setInterval(tick,250);paintTimer();tmsg("Timer running…");
+ endAt=Date.now()+remaining*1000;tState="running";stopTick();tId=setInterval(tick,250);paintTimer();updateTimerNotification();tmsg("Timer running…");
 }
-function pauseTimer(){if(tState!=="running")return;tick();if(tState!=="running")return;stopTick();tState="paused";paintTimer();tmsg("Timer paused.")}
-function resetTimer(){stopTick();tState="idle";remaining=total;$("#timerDisplay").classList.remove("done");paintTimer();tmsg("Timer reset.")}
+function pauseTimer(){if(tState!=="running")return;tick();if(tState!=="running")return;stopTick();tState="paused";paintTimer();updateTimerNotification();tmsg("Timer paused.")}
+function resetTimer(){stopTick();tState="idle";remaining=total;$("#timerDisplay").classList.remove("done");paintTimer();closeTimerNotification();tmsg("Timer reset.")}
 function startRest(){setTime(90,"90-second rest");startTimer();toast("90-second rest started")}
 
+$("#enableTimerNotification").onclick=async()=>{
+ if(!("Notification" in window)){tmsg("This browser does not support notifications.");return}
+ try{
+  const permission=await Notification.requestPermission();
+  if(permission==="granted"){tmsg("Notifications enabled. Start the timer to see the remaining time in your notification.");if(tState==="running"||tState==="paused")updateTimerNotification()}
+  else tmsg("Notifications were not allowed. Enable them in your browser/site settings.");
+ }catch(e){tmsg("Could not enable notifications. Check browser settings.")}
+};
 $("#startTimer").onclick=startTimer;
 $("#pauseTimer").onclick=pauseTimer;
 $("#resetTimer").onclick=resetTimer;
@@ -693,6 +702,22 @@ if("IntersectionObserver" in window){
 setActive("home");
 setInterval(()=>{const k=todayKey();if(k!==lastDay){lastDay=k;renderAll();renderPanel()}},60000);
 document.addEventListener("visibilitychange",()=>{if(!document.hidden){if(tState==="running")tick();const k=todayKey();if(k!==lastDay){lastDay=k;renderAll()}}});
+
+/* ---------- Timer notification helpers ---------- */
+async function updateTimerNotification(finished=false){
+ if(!("Notification" in window)||Notification.permission!=="granted"||!("serviceWorker" in navigator))return;
+ try{
+  const registration=await navigator.serviceWorker.ready;
+  const title="POWER GYM 💪";
+  const body=finished?"⏱ WORKOUT TIMER FINISHED":(tState==="paused"?"⏸ TIMER PAUSED · "+fmt(remaining):"⏱ WORKOUT TIMER · "+fmt(remaining)+" remaining");
+  const actions=finished?[{action:"stop",title:"Dismiss"}]:[{action:tState==="running"?"pause":"resume",title:tState==="running"?"Pause":"Resume"},{action:"stop",title:"Stop"}];
+  await registration.showNotification(title,{body,tag:"powergym-timer",renotify:false,silent:true,ongoing:!finished,icon:"./icon-192.svg",badge:"./icon-192.svg",actions,data:{url:"./"}});
+ }catch(e){console.warn("Timer notification update failed:",e)}
+}
+async function closeTimerNotification(){
+ if(!("serviceWorker" in navigator))return;
+ try{const registration=await navigator.serviceWorker.ready;registration.active?.postMessage({type:"close-timer-notification"})}catch(e){}
+}
 
 /* ---------- PWA service worker ---------- */
 if ("serviceWorker" in navigator) {
