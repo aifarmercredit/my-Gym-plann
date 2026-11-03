@@ -2,6 +2,11 @@
 const NOTIF_TAG = "powergym-timer";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (event) => event.waitUntil(self.clients.claim()));
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "close-timer-notification") {
+    event.waitUntil(self.registration.getNotifications({ tag: NOTIF_TAG }).then((notifications) => notifications.forEach((n) => n.close())));
+  }
+});
 self.addEventListener("fetch", (event) => {
   event.respondWith(fetch(event.request).catch(() => caches.match(event.request)));
 });
