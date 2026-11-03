@@ -709,9 +709,9 @@ async function updateTimerNotification(finished=false){
  try{
   const registration=await navigator.serviceWorker.ready;
   const title="POWER GYM 💪";
-  const body=finished?"⏱ WORKOUT TIMER FINISHED":(tState==="paused"?"⏸ TIMER PAUSED · "+fmt(remaining):"⏱ WORKOUT TIMER · "+fmt(remaining)+" remaining");
+  const body=finished?"🔔 TIME IS UP! Your workout timer has finished.":(tState==="paused"?"⏸ TIMER PAUSED · "+fmt(remaining):"⏱ WORKOUT TIMER · "+fmt(remaining)+" remaining");
   const actions=finished?[{action:"stop",title:"Dismiss"}]:[{action:tState==="running"?"pause":"resume",title:tState==="running"?"Pause":"Resume"},{action:"stop",title:"Stop"}];
-  await registration.showNotification(title,{body,tag:"powergym-timer",renotify:false,silent:true,ongoing:!finished,icon:"./icon-192.svg",badge:"./icon-192.svg",actions,data:{url:"./"}});
+  await registration.showNotification(title,{body,tag:"powergym-timer",renotify:finished,silent:!finished,vibrate:finished?[500,200,500,200,700]:[100],ongoing:!finished,requireInteraction:finished,icon:"./icon-192.svg",badge:"./icon-192.svg",actions,data:{url:"./"}});
  }catch(e){console.warn("Timer notification update failed:",e)}
 }
 async function closeTimerNotification(){
