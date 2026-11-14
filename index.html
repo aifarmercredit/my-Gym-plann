@@ -243,6 +243,17 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
   *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 }
 
+/* Main navigation account and separate admin page */
+#topNav{display:flex;align-items:center;gap:clamp(7px,1vw,16px);flex-wrap:wrap}
+#topNav [data-nav="account"],#topNav [data-nav="adminDashboard"]{border:1px solid rgba(255,138,0,.28);border-radius:999px;padding:8px 12px;background:rgba(255,138,0,.08)}
+#topNav [data-nav="account"] span,#topNav [data-nav="adminDashboard"] span{white-space:nowrap}
+#topNav [hidden],#tabBar [hidden]{display:none!important}
+#tabBar{overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
+#tabBar::-webkit-scrollbar{display:none}
+#tabBar a{flex:0 0 auto;white-space:nowrap}
+.admin-page{max-width:1100px;margin:34px auto;padding:clamp(16px,3vw,30px);border:1px solid rgba(255,138,0,.2);border-radius:22px;background:linear-gradient(145deg,#17171c,#101014);scroll-margin-top:90px}
+.admin-page[hidden]{display:none!important}
+.admin-page .gym-admin-dashboard{width:100%}
 /* POWER GYM account/profile */
 #gymAccountBtn{white-space:nowrap;flex:none}
 #gymAccountModal{position:fixed;inset:0;z-index:9999;background:rgba(5,5,7,.97);display:none;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
@@ -353,6 +364,8 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
   <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c.8-4.2 3.5-6.5 8-6.5s7.2 2.3 8 6.5"/></symbol>
+  <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11Z"/><path d="m9 12 2 2 4-4"/></symbol>
   <symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/></symbol>
 </svg>
 
@@ -363,8 +376,14 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
   </a>
   <nav class="topnav" id="topNav" aria-label="Main navigation"></nav>
 
-<button id="gymAccountBtn" class="btn sm primary" type="button" onclick="var m=document.getElementById('gymAccountModal');if(m){m.classList.add('open');m.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';m.scrollTop=0;var b=m.querySelector('.gym-box');if(b)b.scrollTop=0;}">Clerk Login</button>
-<div id="gymAccountModal" aria-hidden="true"><div class="gym-box" role="dialog" aria-modal="true" aria-labelledby="gymModalTitle"><button id="gymClose" class="gym-close" type="button" aria-label="Close login">×</button><div id="gymAuthPane" class="gym-auth-card"><h1 id="gymModalTitle">Sign In</h1><p class="gym-subtitle" id="gymSubtitle">Enter your credentials to continue</p><p id="gymAuthStatus" class="gym-note" role="status">Create account or login to save your profile.</p><div id="gymCredentialsPane"><div class="gym-form"><label id="gymNameLabel" class="wide">Full name<input id="gymName" type="text" autocomplete="name" maxlength="70" placeholder="Your name"></label><label class="wide">Email<input id="gymEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label class="wide">Password<input id="gymPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••"></label><label id="gymConfirmLabel" class="wide">Confirm password<input id="gymConfirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="Re-enter password"></label></div><div class="gym-actions"><button id="gymSignup" class="gym-submit" type="button">Create Account</button><button id="gymLogin" class="gym-submit" type="button" hidden>Sign In</button></div></div><div id="gymOtpPane" hidden><div class="gym-form"><label class="wide">Email verification code (OTP)<input id="gymOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter code from email"></label></div><div class="gym-actions"><button id="gymVerifyOtp" class="gym-submit" type="button">Verify email</button><button id="gymResendOtp" class="gym-toggle" type="button">Resend code</button></div></div><p class="gym-toggle-line"><span id="gymToggleText">No account yet?</span> <button id="gymModeSignup" class="gym-toggle" type="button">Create one</button><button id="gymModeLogin" class="gym-toggle" type="button">Sign in</button></p></div><section id="gymProfilePane" hidden><h3 style="margin:8px 0 12px">My Profile — Edit your details anytime</h3><div class="gym-form"><label class="wide">Display name<input id="gymDisplayName" type="text" maxlength="70" autocomplete="name"></label><label>Age (years)<input id="gymAge" type="number" min="13" max="100" step="1" inputmode="numeric"></label><label>Gender (optional)<select id="gymGender"><option value="prefer_not_to_say">Prefer not to say</option><option value="female">Female</option><option value="male">Male</option></select></label><label>Height (cm)<input id="gymHeight" type="number" min="50" max="250" step="0.1" inputmode="decimal"></label><label>Weight (kg)<input id="gymWeight" type="number" min="20" max="400" step="0.1" inputmode="decimal"></label><label>Fitness goal<select id="gymGoal"><option value="general_fitness">General fitness &amp; wellbeing</option><option value="strength">Build strength safely</option><option value="mobility">Improve mobility</option><option value="healthy_habits">Healthy habits</option></select></label><label>Workout days / week<input id="gymFrequency" type="number" min="1" max="7" value="3" step="1"></label><div class="wide"><strong>Progress photos (optional)</strong><p class="gym-note">Choose photos of the front, back, right side, and left side. These are kept privately in this browser profile.</p></div><label>Front photo<input id="gymPhotoFront" type="file" accept="image/*"></label><label>Back photo<input id="gymPhotoBack" type="file" accept="image/*"></label><label>Right side photo<input id="gymPhotoRight" type="file" accept="image/*"></label><label>Left side photo<input id="gymPhotoLeft" type="file" accept="image/*"></label><div class="wide" id="gymPhotoPreviews" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div><label class="wide">Goal / target weight (kg)<input id="gymTargetWeight" type="number" min="20" max="400" step="0.1" inputmode="decimal"></label><div class="wide gym-weekly-editor-wrap"><div class="gym-editor-heading"><div><strong>Weekly Workout Planner</strong><p class="gym-note">Edit each day's workout name, exercises, or switch any day to Rest Day.</p></div><span class="gym-editor-icon">📅</span></div><div id="gymWeeklyEditor" class="gym-weekly-editor"></div></div><div class="wide"><p class="gym-note">Weight targets are optional. For teens, discuss weight-related goals with a trusted adult or healthcare professional; prioritize healthy habits, safe movement, and wellbeing.</p></div></div><div class="gym-actions"><button id="gymSaveProfile" class="btn primary" type="button">Save profile changes</button><button id="gymLogout" class="btn" type="button">Logout</button></div><div id="gymAdminPane" hidden class="gym-admin-dashboard">
+
+<div id="gymAccountModal" aria-hidden="true"><div class="gym-box" role="dialog" aria-modal="true" aria-labelledby="gymModalTitle"><button id="gymClose" class="gym-close" type="button" aria-label="Close login">×</button><div id="gymAuthPane" class="gym-auth-card"><h1 id="gymModalTitle">Sign In</h1><p class="gym-subtitle" id="gymSubtitle">Enter your credentials to continue</p><p id="gymAuthStatus" class="gym-note" role="status">Create account or login to save your profile.</p><div id="gymCredentialsPane"><div class="gym-form"><label id="gymNameLabel" class="wide">Full name<input id="gymName" type="text" autocomplete="name" maxlength="70" placeholder="Your name"></label><label class="wide">Email<input id="gymEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><label class="wide">Password<input id="gymPassword" type="password" autocomplete="current-password" minlength="6" required placeholder="••••••••"></label><label id="gymConfirmLabel" class="wide">Confirm password<input id="gymConfirmPassword" type="password" autocomplete="new-password" minlength="6" placeholder="Re-enter password"></label></div><div class="gym-actions"><button id="gymSignup" class="gym-submit" type="button">Create Account</button><button id="gymLogin" class="gym-submit" type="button" hidden>Sign In</button></div></div><div id="gymOtpPane" hidden><div class="gym-form"><label class="wide">Email verification code (OTP)<input id="gymOtp" type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="Enter code from email"></label></div><div class="gym-actions"><button id="gymVerifyOtp" class="gym-submit" type="button">Verify email</button><button id="gymResendOtp" class="gym-toggle" type="button">Resend code</button></div></div><p class="gym-toggle-line"><span id="gymToggleText">No account yet?</span> <button id="gymModeSignup" class="gym-toggle" type="button">Create one</button><button id="gymModeLogin" class="gym-toggle" type="button">Sign in</button></p></div><section id="gymProfilePane" hidden><h3 style="margin:8px 0 12px">My Profile — Edit your details anytime</h3><div class="gym-form"><label class="wide">Display name<input id="gymDisplayName" type="text" maxlength="70" autocomplete="name"></label><label>Age (years)<input id="gymAge" type="number" min="13" max="100" step="1" inputmode="numeric"></label><label>Gender (optional)<select id="gymGender"><option value="prefer_not_to_say">Prefer not to say</option><option value="female">Female</option><option value="male">Male</option></select></label><label>Height (cm)<input id="gymHeight" type="number" min="50" max="250" step="0.1" inputmode="decimal"></label><label>Weight (kg)<input id="gymWeight" type="number" min="20" max="400" step="0.1" inputmode="decimal"></label><label>Fitness goal<select id="gymGoal"><option value="general_fitness">General fitness &amp; wellbeing</option><option value="strength">Build strength safely</option><option value="mobility">Improve mobility</option><option value="healthy_habits">Healthy habits</option></select></label><label>Workout days / week<input id="gymFrequency" type="number" min="1" max="7" value="3" step="1"></label><div class="wide"><strong>Progress photos (optional)</strong><p class="gym-note">Choose photos of the front, back, right side, and left side. These are kept privately in this browser profile.</p></div><label>Front photo<input id="gymPhotoFront" type="file" accept="image/*"></label><label>Back photo<input id="gymPhotoBack" type="file" accept="image/*"></label><label>Right side photo<input id="gymPhotoRight" type="file" accept="image/*"></label><label>Left side photo<input id="gymPhotoLeft" type="file" accept="image/*"></label><div class="wide" id="gymPhotoPreviews" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px"></div><label class="wide">Goal / target weight (kg)<input id="gymTargetWeight" type="number" min="20" max="400" step="0.1" inputmode="decimal"></label><div class="wide gym-weekly-editor-wrap"><div class="gym-editor-heading"><div><strong>Weekly Workout Planner</strong><p class="gym-note">Edit each day's workout name, exercises, or switch any day to Rest Day.</p></div><span class="gym-editor-icon">📅</span></div><div id="gymWeeklyEditor" class="gym-weekly-editor"></div></div><div class="wide"><p class="gym-note">Weight targets are optional. For teens, discuss weight-related goals with a trusted adult or healthcare professional; prioritize healthy habits, safe movement, and wellbeing.</p></div></div><div class="gym-actions"><button id="gymSaveProfile" class="btn primary" type="button">Save profile changes</button><button id="gymLogout" class="btn" type="button">Logout</button></div></section></div></div>
+<script>(function(){var d=document.getElementById("gymAccountModal");if(d&&d.parentElement!==document.body)document.body.appendChild(d);})();</script>
+</header>
+<nav class="tabbar" id="tabBar" aria-label="Quick navigation"></nav>
+
+<main>
+<section id="adminDashboard" hidden class="admin-page"><div id="gymAdminPane" class="gym-admin-dashboard">
   <div class="gym-admin-title"><h3>Admin Dashboard</h3><span class="gym-admin-tag">ADMIN</span></div>
   <div class="gym-admin-tabs">
     <button type="button" id="gymAdminUsersTab" class="btn sm primary">Users</button>
@@ -380,12 +399,8 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
     <div id="gymMessagesList" class="gym-admin-list">Loading messages…</div>
   </div>
   <p id="gymAdminStatus" class="gym-note" role="status"></p>
-</div></section></div></div>
-<script>(function(){var d=document.getElementById("gymAccountModal");if(d&&d.parentElement!==document.body)document.body.appendChild(d);})();</script>
-</header>
-<nav class="tabbar" id="tabBar" aria-label="Quick navigation"></nav>
+</div></section>
 
-<main>
   <section id="home" class="hero" style="margin-top:6px">
     <svg class="hero-bar" viewBox="0 0 600 200" aria-hidden="true"><defs><linearGradient id="hg" x1="0" x2="1"><stop offset="0" stop-color="#ff3d22"/><stop offset="1" stop-color="#ff8a00"/></linearGradient></defs><g fill="url(#hg)"><rect x="20" y="40" width="30" height="120" rx="8"/><rect x="58" y="20" width="36" height="160" rx="10"/><rect x="100" y="86" width="400" height="28" rx="14"/><rect x="506" y="20" width="36" height="160" rx="10"/><rect x="550" y="40" width="30" height="120" rx="8"/></g></svg>
     <div class="hero-copy">
@@ -610,13 +625,19 @@ function nextTraining(){const order=["sun","mon","tue","wed","thu","fri","sat"];
 let toastT;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2600)}
 
 /* ---------- Navigation ---------- */
-const NAV=[["home","Home","home"],["workouts","Workouts","dumbbell"],["schedule","Schedule","calendar"],["videos","Videos","play"],["progress","Progress","chart"],["timer","Timer","timer"],["contact","Contact","info"]];
+const NAV=[["home","Home","home"],["workouts","Workouts","dumbbell"],["schedule","Schedule","calendar"],["videos","Videos","play"],["progress","Progress","chart"],["timer","Timer","timer"],["contact","Contact","info"],["account","Clerk Login","user"],["adminDashboard","Admin Dashboard","shield"]];
+function updateAccountNavigation(isAdmin){
+ document.querySelectorAll('[data-nav="account"]').forEach(a=>{const label=clerkUser?"My Account":"Clerk Login";a.querySelector("span").textContent=label;a.setAttribute("aria-label",label)});
+ document.querySelectorAll('[data-nav="adminDashboard"]').forEach(a=>a.hidden=!isAdmin);
+}
 function buildNav(){
- const html=NAV.map(n=>`<a href="#${n[0]}" data-nav="${n[0]}">${ic(n[2])}<span>${n[1]}</span></a>`).join("");
+ const html=NAV.map(n=>'<a href="#'+n[0]+'" data-nav="'+n[0]+'"'+(n[0]==="adminDashboard"?' hidden':'')+'>'+ic(n[2])+'<span>'+n[1]+'</span></a>').join("");
  $("#topNav").innerHTML=html;$("#tabBar").innerHTML=html;
+ document.querySelectorAll('[data-nav="account"]').forEach(a=>a.addEventListener("click",e=>{e.preventDefault();show();setActive("account")}));
+ document.querySelectorAll('[data-nav="adminDashboard"]').forEach(a=>a.addEventListener("click",e=>{e.preventDefault();if(!clerkUser){show();return;}if(!window.gymIsAdmin){toast("Admin access only.");return;}document.getElementById("adminDashboard").hidden=false;document.getElementById("adminDashboard").scrollIntoView({behavior:"smooth",block:"start"});setActive("adminDashboard")}));
+ updateAccountNavigation(false);
 }
 function setActive(id){document.querySelectorAll("[data-nav]").forEach(a=>{const on=a.dataset.nav===id;a.classList.toggle("active",on);if(on)a.setAttribute("aria-current","true");else a.removeAttribute("aria-current")})}
-
 /* ---------- Renderers ---------- */
 function renderHero(){
  const d=todayDay(),el=$("#todayCard"),btn=$("#todayButton");
@@ -968,14 +989,14 @@ $("gymTargetWeight").value=p.target_weight_kg??"";
 const weeklyConfig=parseWeeklyPlan(p.weekly_plan||defaultPlan);renderWeeklyEditor(weeklyConfig);window.applyGymWeeklyPlan?.(weeklyConfig);
 ["front","back","right","left"].forEach(side=>{$("gymPhoto"+side[0].toUpperCase()+side.slice(1)).value="";photoUrls[side]=null;photoFiles[side]=null});
 paintPhotoPreviews(p);
-$("gymAdminPane").hidden=!loaded.isAdmin;
+window.gymIsAdmin=!!loaded.isAdmin;$("adminDashboard").hidden=!loaded.isAdmin;updateAccountNavigation(!!loaded.isAdmin);
 if(loaded.isAdmin)loadAdminDashboard();
 msg("Signed in as "+(clerkUser.primaryEmailAddress?.emailAddress||clerkUser.id)+". Edit your profile below.");
 }
 async function refresh(){
 if(!window.Clerk){setTimeout(refresh,300);return}
 try{await Clerk.load();clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.addListener(()=>{clerkUser=Clerk.user||null;if(clerkUser){closeClerkLoginPage();refresh();}});listenerAttached=true}}catch(e){msg("Clerk failed to load. Please refresh.");return}
-if(!clerkUser){$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymAccountBtn").textContent="Clerk Login";$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
+if(!clerkUser){window.gymIsAdmin=false;$("adminDashboard").hidden=true;updateAccountNavigation(false);$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
 else await fillProfile();
 }
 async function waitForClerk(){
@@ -1023,7 +1044,7 @@ const weeklyConfig=collectWeeklyEditor();
 const profile={display_name:$("gymDisplayName").value.trim(),age_years:ageText?Number(ageText):null,gender:$("gymGender").value,height_cm:heightText?Number(heightText):null,weight_kg:weightText?Number(weightText):null,target_weight_kg:targetText?Number(targetText):null,goal:$("gymGoal").value,weekly_frequency:Number(frequencyText),weekly_plan:JSON.stringify({days:weeklyConfig}),photos,updated_at:new Date().toISOString()};
 try{const token=await Clerk.session?.getToken();if(!token)throw new Error("Login session expired");const response=await fetch("https://xcevtpkrasvevwyvvdjq.supabase.co/functions/v1/gym-profile-clerk",{method:"PUT",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(profile)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Cloud save failed");cachedProfile=profile;window.applyGymWeeklyPlan?.(weeklyConfig);msg("Profile and weekly workout plan saved. Your Home page and Schedule are updated.");paintPhotoPreviews(profile);photoFiles={front:null,back:null,right:null,left:null};}catch(e){msg("Cloud save failed: "+e.message)}
 };
-$("gymLogout").onclick=async()=>{try{await Clerk.signOut();clerkUser=null;await refresh();show()}catch(e){msg("Logout failed. Please try again.")}};
+$("gymLogout").onclick=async()=>{try{await Clerk.signOut();clerkUser=null;window.gymIsAdmin=false;$("adminDashboard").hidden=true;updateAccountNavigation(false);setActive("home");await refresh();show()}catch(e){msg("Logout failed. Please try again.")}};
 
 function adminEscape(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 async function loadAdminDashboard(){
