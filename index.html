@@ -905,6 +905,31 @@ const result=await response.json();return {profile:result.profile||{},isAdmin:re
 async function compressPhoto(file){
 const bitmap=await createImageBitmap(file);const scale=Math.min(1,720/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));const ctx=canvas.getContext("2d");ctx.drawImage(bitmap,0,0,canvas.width,canvas.height);bitmap.close();return canvas.toDataURL("image/jpeg",0.62);
 }
+function parseWeeklyPlan(value){
+ try{const parsed=JSON.parse(value);if(Array.isArray(parsed))return parsed;if(parsed&&Array.isArray(parsed.days))return parsed.days;}catch(e){}
+ const names=[["Monday","mon"],["Tuesday","tue"],["Wednesday","wed"],["Thursday","thu"],["Friday","fri"],["Saturday","sat"],["Sunday","sun"]];
+ const normalized=String(value||defaultPlan).replace(/\\n/g,"\n");
+ return names.map(([day,key])=>{const line=normalized.split(/\r?\n/).find(x=>x.trim().toLowerCase().startsWith(day.toLowerCase()+":"))||"";const label=line.split(":").slice(1).join(":").trim();const rest=!label||/^(rest|rest day)$/i.test(label);return {day,key,rest,title:rest?"":label,muscles:rest?"Recovery":"",exercises:[]};});
+}
+function renderWeeklyEditor(config){
+ const host=$("gymWeeklyEditor");if(!host)return;
+ const names=[["Monday","mon"],["Tuesday","tue"],["Wednesday","wed"],["Thursday","thu"],["Friday","fri"],["Saturday","sat"],["Sunday","sun"]];
+ const byKey=new Map((config||[]).map(x=>[x.key,x]));
+ host.innerHTML=names.map(([day,key])=>{
+  const item=byKey.get(key)||{rest:false,title:"",muscles:"",exercises:[]};
+  return '<article class="gym-plan-day '+(item.rest?'is-rest':'')+'" data-plan-day="'+key+'"><div class="gym-plan-day-head"><strong>'+day+'</strong><label class="gym-rest-toggle"><input type="checkbox" data-plan-rest '+(item.rest?'checked':'')+'> Rest day</label></div><div class="gym-plan-fields"><label>Workout name<input type="text" data-plan-title maxlength="70" value="'+adminEscape(item.title||'')+'" placeholder="e.g. Full Body"></label><label>Muscle groups<input type="text" data-plan-muscles maxlength="90" value="'+adminEscape(item.muscles||'')+'" placeholder="e.g. Back and shoulders"></label><label>Workout exercises <span class="muted">(one exercise per line)</span><textarea data-plan-exercises placeholder="Enter exercise names, one per line">'+adminEscape((item.exercises||[]).join("\n"))+'</textarea></label></div><p class="gym-plan-rest-note">This day will appear as REST DAY on your Home page and Schedule.</p></article>';
+ }).join("");
+ host.querySelectorAll("[data-plan-rest]").forEach(input=>input.addEventListener("change",()=>input.closest(".gym-plan-day").classList.toggle("is-rest",input.checked)));
+}
+function collectWeeklyEditor(){
+ return Array.from(document.querySelectorAll(".gym-plan-day")).map(card=>({
+  key:card.dataset.planDay,day:card.querySelector(".gym-plan-day-head strong").textContent,
+  rest:card.querySelector("[data-plan-rest]").checked,
+  title:card.querySelector("[data-plan-title]").value.trim(),
+  muscles:card.querySelector("[data-plan-muscles]").value.trim(),
+  exercises:card.querySelector("[data-plan-exercises]").value.split(/\r?\n/).map(x=>x.trim()).filter(Boolean).slice(0,15)
+ }));
+}
 function paintPhotoPreviews(profile){
 const host=$("gymPhotoPreviews");host.innerHTML="";
 ["front","back","right","left"].forEach(side=>{
@@ -927,7 +952,7 @@ $("gymAge").value=p.age_years??"";$("gymGender").value=p.gender||"prefer_not_to_
 $("gymHeight").value=p.height_cm??"";$("gymWeight").value=p.weight_kg??"";
 $("gymGoal").value=p.goal||"general_fitness";$("gymFrequency").value=p.weekly_frequency??3;
 $("gymTargetWeight").value=p.target_weight_kg??"";
-$("gymWeeklyPlan").value=p.weekly_plan||defaultPlan.replace(/\\n/g,"\n");
+const weeklyConfig=parseWeeklyPlan(p.weekly_plan||defaultPlan);renderWeeklyEditor(weeklyConfig);window.applyGymWeeklyPlan?.(weeklyConfig);
 ["front","back","right","left"].forEach(side=>{$("gymPhoto"+side[0].toUpperCase()+side.slice(1)).value="";photoUrls[side]=null;photoFiles[side]=null});
 paintPhotoPreviews(p);
 $("gymAdminPane").hidden=!loaded.isAdmin;
@@ -981,8 +1006,9 @@ if(targetText&&(!Number.isFinite(Number(targetText))||Number(targetText)<20||Num
 if(!Number.isInteger(Number(frequencyText))||Number(frequencyText)<1||Number(frequencyText)>7){msg("Choose 1 to 7 workout days per week.");return}
 const p=cachedProfile,photos={...(p.photos||{})};
 for(const side of ["front","back","right","left"]){const f=photoFiles[side];if(f){try{photos[side]=await compressPhoto(f)}catch(e){msg("Could not process "+side+" photo.");return}}}
-const profile={display_name:$("gymDisplayName").value.trim(),age_years:ageText?Number(ageText):null,gender:$("gymGender").value,height_cm:heightText?Number(heightText):null,weight_kg:weightText?Number(weightText):null,target_weight_kg:targetText?Number(targetText):null,goal:$("gymGoal").value,weekly_frequency:Number(frequencyText),weekly_plan:$("gymWeeklyPlan").value.trim(),photos,updated_at:new Date().toISOString()};
-try{const token=await Clerk.session?.getToken();if(!token)throw new Error("Login session expired");const response=await fetch("https://xcevtpkrasvevwyvvdjq.supabase.co/functions/v1/gym-profile-clerk",{method:"PUT",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(profile)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Cloud save failed");cachedProfile=profile;msg("Profile saved securely to your cloud account. You can edit it anytime.");paintPhotoPreviews(profile);photoFiles={front:null,back:null,right:null,left:null};}catch(e){msg("Cloud save failed: "+e.message)}
+const weeklyConfig=collectWeeklyEditor();
+const profile={display_name:$("gymDisplayName").value.trim(),age_years:ageText?Number(ageText):null,gender:$("gymGender").value,height_cm:heightText?Number(heightText):null,weight_kg:weightText?Number(weightText):null,target_weight_kg:targetText?Number(targetText):null,goal:$("gymGoal").value,weekly_frequency:Number(frequencyText),weekly_plan:JSON.stringify({days:weeklyConfig}),photos,updated_at:new Date().toISOString()};
+try{const token=await Clerk.session?.getToken();if(!token)throw new Error("Login session expired");const response=await fetch("https://xcevtpkrasvevwyvvdjq.supabase.co/functions/v1/gym-profile-clerk",{method:"PUT",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(profile)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Cloud save failed");cachedProfile=profile;window.applyGymWeeklyPlan?.(weeklyConfig);msg("Profile and weekly workout plan saved. Your Home page and Schedule are updated.");paintPhotoPreviews(profile);photoFiles={front:null,back:null,right:null,left:null};}catch(e){msg("Cloud save failed: "+e.message)}
 };
 $("gymLogout").onclick=async()=>{try{await Clerk.signOut();clerkUser=null;await refresh();show()}catch(e){msg("Logout failed. Please try again.")}};
 
