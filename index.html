@@ -248,6 +248,15 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 
 /* Clean login card theme matching supplied design */
 #gymAccountModal{background:#0f172a;align-items:center;justify-content:center;padding:20px}#gymAccountModal.open{display:flex}#gymAccountModal .gym-box{position:relative;width:100%;max-width:380px;max-height:calc(100dvh - 40px);overflow-y:auto;padding:36px 30px;background:#fff;color:#0f172a;border:0;border-radius:16px;box-shadow:0 15px 40px rgba(0,0,0,.4)}#gymAccountModal .gym-auth-card h1{font-family:"Segoe UI",Arial,sans-serif;text-transform:none;font-size:1.85rem;line-height:1.2;text-align:center;color:#0f172a;letter-spacing:0;margin:0 0 6px}#gymAccountModal .gym-subtitle{text-align:center;color:#64748b;font-size:14px;margin:0 0 20px}#gymAccountModal .gym-close{position:absolute;right:12px;top:10px;border:0;background:transparent;color:#64748b;font-size:24px;cursor:pointer;padding:2px 8px}#gymAccountModal #gymAuthStatus{font-size:13px;color:#64748b;min-height:18px;margin:0 0 14px;text-align:center;overflow-wrap:anywhere}#gymAccountModal .gym-form{display:grid;grid-template-columns:1fr;gap:8px;margin:0}#gymAccountModal .gym-form label{display:grid;gap:5px;color:#334155;font-size:13px;font-weight:600}#gymAccountModal .gym-form input{width:100%;min-height:44px;padding:12px 14px;margin:0 0 4px;font-size:15px;border:1.5px solid #cbd5e1;border-radius:10px;background:#fff;color:#0f172a;outline:none}#gymAccountModal .gym-form input:focus{border-color:#2563eb}#gymAccountModal .gym-actions{display:grid;grid-template-columns:1fr;margin-top:10px}#gymAccountModal .gym-submit{width:100%;padding:14px;border:0;border-radius:10px;font-size:16px;font-weight:600;color:#fff;background:#2563eb;cursor:pointer}#gymAccountModal .gym-submit:hover{background:#1d4ed8}#gymAccountModal .gym-toggle-line{text-align:center;margin:18px 0 0;font-size:14px;color:#64748b}#gymAccountModal .gym-toggle{border:0;background:none;color:#2563eb;font-size:14px;font-weight:600;text-decoration:none;cursor:pointer;padding:0 3px}#gymAccountModal[data-auth-mode="login"] #gymModeLogin{display:none!important}#gymAccountModal[data-auth-mode="signup"] #gymModeSignup{display:none!important}#gymAccountModal[data-auth-mode="login"] #gymNameLabel,#gymAccountModal[data-auth-mode="login"] #gymConfirmLabel{display:none!important}#gymAccountModal[data-auth-mode="signup"] #gymNameLabel,#gymAccountModal[data-auth-mode="signup"] #gymConfirmLabel{display:grid!important}#gymAccountModal #gymProfilePane{color:#f6f6f7}@media(max-width:450px){#gymAccountModal{padding:20px}#gymAccountModal .gym-box{max-width:380px;padding:36px 24px}}
+
+/* Dedicated full-page Clerk authentication */
+#clerkLoginPage{position:fixed;inset:0;z-index:10050;display:none;overflow:auto;background:#09090b;color:#f8fafc;padding:24px 16px;box-sizing:border-box}
+#clerkLoginPage.active{display:flex;align-items:flex-start;justify-content:center}
+#clerkLoginPage .clerk-login-shell{width:min(100%,520px);margin:auto;min-height:calc(100dvh - 48px);display:flex;flex-direction:column;justify-content:center;gap:16px}
+#clerkLoginPage .clerk-login-head{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#clerkLoginPage .clerk-login-close{border:1px solid #3f3f46;background:#18181b;color:white;border-radius:12px;padding:10px 14px;font-size:15px}
+#clerkSignInMount{width:100%;display:flex;justify-content:center}
+#clerkSignInMount .cl-rootBox{width:100%}
 </style>
 </head>
 <body>
@@ -751,6 +760,12 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
+<div id="clerkLoginPage" aria-hidden="true">
+  <div class="clerk-login-shell">
+    <div class="clerk-login-head"><strong>POWER GYM · Clerk Login</strong><button id="clerkLoginClose" class="clerk-login-close" type="button">Back to Home</button></div>
+    <div id="clerkSignInMount"></div>
+  </div>
+</div>
 <script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_aW1tdW5lLWRyYWdvbi05ODc1LmNsZXJrLmFjY291bnRzLmRldiQ" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@6.42.3/dist/clerk.browser.js" type="text/javascript"></script>
 <script>
 (()=> {
@@ -799,7 +814,7 @@ msg("Signed in as "+(clerkUser.primaryEmailAddress?.emailAddress||clerkUser.id)+
 }
 async function refresh(){
 if(!window.Clerk){setTimeout(refresh,300);return}
-try{await Clerk.load();clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.addListener(()=>{clerkUser=Clerk.user||null;refresh()});listenerAttached=true}}catch(e){msg("Clerk failed to load. Please refresh.");return}
+try{await Clerk.load();clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.addListener(()=>{clerkUser=Clerk.user||null;if(clerkUser){closeClerkLoginPage();refresh();}});listenerAttached=true}}catch(e){msg("Clerk failed to load. Please refresh.");return}
 if(!clerkUser){$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymAccountBtn").textContent="Clerk Login";$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
 else await fillProfile();
 }
@@ -807,16 +822,29 @@ async function waitForClerk(){
 for(let i=0;i<80;i++){if(window.Clerk&&typeof window.Clerk.load==="function")return window.Clerk;await new Promise(resolve=>setTimeout(resolve,100))}
 throw new Error("Login service is still loading. Refresh the page and try again.");
 }
-$("gymAccountBtn").onclick=async()=>{
-try{
+let clerkSignInMounted=false;
+function closeClerkLoginPage(){
+const page=$("clerkLoginPage");if(page){page.classList.remove("active");page.setAttribute("aria-hidden","true");}
+}
+async function openClerkLoginPage(){
 const clerk=await waitForClerk();await clerk.load();clerkUser=clerk.user||null;
-if(clerkUser){show();await fillProfile()}
-else {hide();clerk.openSignIn({})}
-}catch(e){show();msg(e.message||"Could not open Login. Please refresh and try again.")}
+if(clerkUser){show();await fillProfile();return;}
+hide();
+const page=$("clerkLoginPage");page.classList.add("active");page.setAttribute("aria-hidden","false");
+const mount=$("clerkSignInMount");
+if(!clerkSignInMounted){
+clerk.mountSignIn(mount,{fallbackRedirectUrl:window.location.origin+window.location.pathname,signUpFallbackRedirectUrl:window.location.origin+window.location.pathname});
+clerkSignInMounted=true;
+}
+}
+$("gymAccountBtn").onclick=async()=>{
+try{await openClerkLoginPage()}
+catch(e){const page=$("clerkLoginPage");if(page){page.classList.add("active");page.setAttribute("aria-hidden","false");}const mount=$("clerkSignInMount");mount.textContent=e.message||"Could not load Clerk Login. Please refresh and try again.";}
 };
+$("clerkLoginClose").onclick=closeClerkLoginPage;
 $("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
-$("gymModeLogin").onclick=async()=>{try{const clerk=await waitForClerk();await clerk.load();clerk.openSignIn({})}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
-$("gymModeSignup").onclick=async()=>{try{const clerk=await waitForClerk();await clerk.load();clerk.openSignUp({})}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
+$("gymModeLogin").onclick=async()=>{try{await openClerkLoginPage()}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
+$("gymModeSignup").onclick=async()=>{try{await openClerkLoginPage()}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
 ["front","back","right","left"].forEach(side=>{
 const input=$("gymPhoto"+side[0].toUpperCase()+side.slice(1));
 input.onchange=()=>{const f=input.files?.[0];if(!f)return;if(!f.type.startsWith("image/")||f.size>3*1024*1024){msg("Choose an image under 3 MB.");input.value="";return}photoFiles[side]=f;photoUrls[side]=URL.createObjectURL(f);paintPhotoPreviews(cachedProfile)};
