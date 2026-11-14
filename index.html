@@ -248,9 +248,29 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 #topNav [data-nav="account"],#topNav [data-nav="adminDashboard"]{border:1px solid rgba(255,138,0,.28);border-radius:999px;padding:8px 12px;background:rgba(255,138,0,.08)}
 #topNav [data-nav="account"] span,#topNav [data-nav="adminDashboard"] span{white-space:nowrap}
 #topNav [hidden],#tabBar [hidden]{display:none!important}
-#tabBar{overflow-x:auto;justify-content:flex-start;scrollbar-width:none}
-#tabBar::-webkit-scrollbar{display:none}
-#tabBar a{flex:0 0 auto;white-space:nowrap}
+/* Mobile navigation: keep every item on one horizontally scrollable row */
+@media(max-width:860px){
+  #tabBar{
+    display:flex;
+    flex-wrap:nowrap;
+    align-items:center;
+    justify-content:flex-start;
+    gap:5px;
+    width:100%;
+    box-sizing:border-box;
+    overflow-x:auto;
+    overflow-y:hidden;
+    overscroll-behavior-x:contain;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  #tabBar::-webkit-scrollbar{display:none}
+  #tabBar a{
+    flex:0 0 68px;
+    min-width:68px;
+    white-space:nowrap;
+  }
+}
 .admin-page{max-width:1100px;margin:34px auto;padding:clamp(16px,3vw,30px);border:1px solid rgba(255,138,0,.2);border-radius:22px;background:linear-gradient(145deg,#17171c,#101014);scroll-margin-top:90px}
 .admin-page[hidden]{display:none!important}
 .admin-page .gym-admin-dashboard{width:100%}
