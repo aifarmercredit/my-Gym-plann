@@ -633,7 +633,7 @@ function updateAccountNavigation(isAdmin){
 function buildNav(){
  const html=NAV.map(n=>'<a href="#'+n[0]+'" data-nav="'+n[0]+'"'+(n[0]==="adminDashboard"?' hidden':'')+'>'+ic(n[2])+'<span>'+n[1]+'</span></a>').join("");
  $("#topNav").innerHTML=html;$("#tabBar").innerHTML=html;
- document.querySelectorAll('[data-nav="account"]').forEach(a=>a.addEventListener("click",e=>{e.preventDefault();show();setActive("account")}));
+ document.querySelectorAll('[data-nav="account"]').forEach(a=>a.addEventListener("click",async e=>{e.preventDefault();try{await openClerkLoginPage();setActive("account")}catch(err){const page=$("clerkLoginPage");if(page){page.classList.add("active");page.setAttribute("aria-hidden","false");}const mount=$("clerkSignInMount");if(mount)mount.textContent=err.message||"Could not load Clerk Login. Please refresh and try again."}}));
  document.querySelectorAll('[data-nav="adminDashboard"]').forEach(a=>a.addEventListener("click",e=>{e.preventDefault();if(!clerkUser){show();return;}if(!window.gymIsAdmin){toast("Admin access only.");return;}document.getElementById("adminDashboard").hidden=false;document.getElementById("adminDashboard").scrollIntoView({behavior:"smooth",block:"start"});setActive("adminDashboard")}));
  updateAccountNavigation(false);
 }
@@ -980,7 +980,7 @@ let loaded={profile:{},isAdmin:false};
 try{loaded=await getCloudProfile();cachedProfile=loaded.profile||{};}catch(e){cachedProfile={};msg("Profile could not be loaded from cloud yet. You can enter details and save.");}
 const p=cachedProfile;
 $("gymAuthPane").hidden=true;$("gymProfilePane").hidden=false;
-$("gymAccountBtn").textContent="My Account";
+updateAccountNavigation(!!loaded.isAdmin);
 $("gymDisplayName").value=p.display_name||clerkUser.fullName||clerkUser.firstName||"";
 $("gymAge").value=p.age_years??"";$("gymGender").value=p.gender||"prefer_not_to_say";
 $("gymHeight").value=p.height_cm??"";$("gymWeight").value=p.weight_kg??"";
@@ -1018,10 +1018,6 @@ clerk.mountSignIn(mount,{fallbackRedirectUrl:window.location.origin+window.locat
 clerkSignInMounted=true;
 }
 }
-$("gymAccountBtn").onclick=async()=>{
-try{await openClerkLoginPage()}
-catch(e){const page=$("clerkLoginPage");if(page){page.classList.add("active");page.setAttribute("aria-hidden","false");}const mount=$("clerkSignInMount");mount.textContent=e.message||"Could not load Clerk Login. Please refresh and try again.";}
-};
 $("clerkLoginClose").onclick=closeClerkLoginPage;
 $("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
 $("gymModeLogin").onclick=async()=>{try{await openClerkLoginPage()}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
