@@ -286,6 +286,19 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 #gymAccountModal[data-auth-mode="otp"] #gymOtpPane{display:block!important}
 #gymAccountModal [hidden]{display:none!important}
 @media(max-width:650px){#gymAccountModal{padding:8px}#gymAccountModal .gym-box{max-height:calc(100dvh - 16px);padding:14px;border-radius:18px}.gym-weekly-editor{grid-template-columns:1fr}#gymProfilePane .gym-form{grid-template-columns:1fr}#gymProfilePane .gym-form .wide{grid-column:auto}.gym-editor-heading{align-items:flex-start}}
+/* Account form and admin components */
+#gymAuthPane .gym-form{margin-top:10px}
+#gymAuthPane .gym-actions{margin-bottom:8px}
+.gym-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.gym-form label{display:grid;gap:6px;color:#bbb;font-size:.88rem}
+.gym-form input,.gym-form select{min-height:44px;padding:9px 12px;border-radius:12px;border:1px solid #444;background:#242429;color:#fff;width:100%}
+.gym-form .wide{grid-column:1/-1}
+.gym-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.gym-actions .btn{flex:1}
+.gym-note{font-size:.88rem;color:#aaa;margin:10px 0}
+.gym-admin-row{padding:12px;border-bottom:1px solid #444;display:flex;flex-direction:column;gap:6px}
+.gym-admin-row p{overflow-wrap:anywhere}
+@media(max-width:450px){.gym-form{grid-template-columns:1fr}.gym-form .wide{grid-column:1/-1}}
 /* Contact page and admin inbox */
 .tabbar{grid-template-columns:repeat(7,1fr)}
 .contact-grid{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:18px;align-items:start}
@@ -506,7 +519,7 @@ function applyGymWeeklyPlan(config){
   if(!d.exercises.length)d.exercises=["Choose your exercises"];
   d.emoji=d.emoji||emojiByKey[d.key]||"💪";
  });
- plan.splice(0,plan.length,...days.filter(d=>d.id).sort((a,b)=>a.day.localeCompare(b.day)));
+ plan.splice(0,plan.length,...days.filter(d=>d.id).sort((a,b)=>["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].indexOf(a.day)-["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"].indexOf(b.day)));
  TOTAL_EX=plan.reduce((n,d)=>n+d.exercises.length,0);
  renderAll();if(activeWorkout!==null){if(!byId(activeWorkout))activeWorkout=null;renderPanel();}
 }
@@ -909,7 +922,7 @@ function parseWeeklyPlan(value){
  try{const parsed=JSON.parse(value);if(Array.isArray(parsed))return parsed;if(parsed&&Array.isArray(parsed.days))return parsed.days;}catch(e){}
  const names=[["Monday","mon"],["Tuesday","tue"],["Wednesday","wed"],["Thursday","thu"],["Friday","fri"],["Saturday","sat"],["Sunday","sun"]];
  const normalized=String(value||defaultPlan).replace(/\\n/g,"\n");
- return names.map(([day,key])=>{const line=normalized.split(/\r?\n/).find(x=>x.trim().toLowerCase().startsWith(day.toLowerCase()+":"))||"";const label=line.split(":").slice(1).join(":").trim();const rest=!label||/^(rest|rest day)$/i.test(label);return {day,key,rest,title:rest?"":label,muscles:rest?"Recovery":"",exercises:[]};});
+ return names.map(([day,key])=>{const line=normalized.split(/\r?\n/).find(x=>x.trim().toLowerCase().startsWith(day.toLowerCase()+":"))||"";const label=line.split(":").slice(1).join(":").trim();const rest=!label||/^(rest|rest day)$/i.test(label);const existing=days.find(d=>d.key===key);return {day,key,rest,title:rest?"":label,muscles:rest?"Recovery":(existing?.muscles||""),exercises:rest?[]:(existing?.exercises||[])};});
 }
 function renderWeeklyEditor(config){
  const host=$("gymWeeklyEditor");if(!host)return;
