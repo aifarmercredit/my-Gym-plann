@@ -797,7 +797,7 @@ try{await Clerk.load();clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.ad
 if(!clerkUser){$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymAccountBtn").textContent="Login";$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
 else await fillProfile();
 }
-$("gymAccountBtn").onclick=async()=>{await refresh();show();if(clerkUser)await fillProfile();else {try{Clerk.openSignIn({})}catch(e){msg("Please wait for Clerk to load, then try again.")}}};
+$("gymAccountBtn").onclick=async()=>{await refresh();if(clerkUser){show();await fillProfile()}else {hide();try{Clerk.openSignIn({})}catch(e){msg("Please wait for Clerk to load, then try again.")}}};
 $("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
 $("gymModeLogin").onclick=()=>{try{Clerk.openSignIn({})}catch(e){msg("Clerk is loading. Please try again.")}};
 $("gymModeSignup").onclick=()=>{try{Clerk.openSignUp({})}catch(e){msg("Clerk is loading. Please try again.")}};
@@ -813,7 +813,7 @@ if(heightText&&(!Number.isFinite(Number(heightText))||Number(heightText)<50||Num
 if(weightText&&(!Number.isFinite(Number(weightText))||Number(weightText)<20||Number(weightText)>400)){msg("Enter a valid weight in kg.");return}
 if(targetText&&(!Number.isFinite(Number(targetText))||Number(targetText)<20||Number(targetText)>400)){msg("Enter a valid optional target weight.");return}
 if(!Number.isInteger(Number(frequencyText))||Number(frequencyText)<1||Number(frequencyText)>7){msg("Choose 1 to 7 workout days per week.");return}
-const p=readProfile(),photos={...(p.photos||{})};
+const p=cachedProfile,photos={...(p.photos||{})};
 for(const side of ["front","back","right","left"]){const f=photoFiles[side];if(f){try{photos[side]=await compressPhoto(f)}catch(e){msg("Could not process "+side+" photo.");return}}}
 const profile={display_name:$("gymDisplayName").value.trim(),age_years:ageText?Number(ageText):null,gender:$("gymGender").value,height_cm:heightText?Number(heightText):null,weight_kg:weightText?Number(weightText):null,target_weight_kg:targetText?Number(targetText):null,goal:$("gymGoal").value,weekly_frequency:Number(frequencyText),weekly_plan:$("gymWeeklyPlan").value.trim(),photos,updated_at:new Date().toISOString()};
 try{const token=await Clerk.session?.getToken();if(!token)throw new Error("Login session expired");const response=await fetch("https://xcevtpkrasvevwyvvdjq.supabase.co/functions/v1/gym-profile-clerk",{method:"PUT",headers:{Authorization:"Bearer "+token,"Content-Type":"application/json"},body:JSON.stringify(profile)});const result=await response.json();if(!response.ok)throw new Error(result.error||"Cloud save failed");cachedProfile=profile;msg("Profile saved securely to your cloud account. You can edit it anytime.");paintPhotoPreviews(profile);photoFiles={front:null,back:null,right:null,left:null};}catch(e){msg("Cloud save failed: "+e.message)}
