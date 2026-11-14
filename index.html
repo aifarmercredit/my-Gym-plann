@@ -751,7 +751,7 @@ if ("serviceWorker" in navigator) {
 }
 </script>
 
-<script async crossorigin="anonymous" data-clerk-publishable-key="pk_test_aW1tdW5lLWRyYWdvbi05ODc1LmNsZXJrLmFjY291bnRzLmRldiQ" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@6.42.3/dist/clerk.browser.js" type="text/javascript"></script>
+<script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_aW1tdW5lLWRyYWdvbi05ODc1LmNsZXJrLmFjY291bnRzLmRldiQ" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@6.42.3/dist/clerk.browser.js" type="text/javascript"></script>
 <script>
 (()=> {
 const $=id=>document.getElementById(id), modal=$("gymAccountModal");
@@ -803,10 +803,20 @@ try{await Clerk.load();clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.ad
 if(!clerkUser){$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymAccountBtn").textContent="Login";$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
 else await fillProfile();
 }
-$("gymAccountBtn").onclick=async()=>{await refresh();if(clerkUser){show();await fillProfile()}else {hide();try{Clerk.openSignIn({})}catch(e){msg("Please wait for Clerk to load, then try again.")}}};
+async function waitForClerk(){
+for(let i=0;i<80;i++){if(window.Clerk&&typeof window.Clerk.load==="function")return window.Clerk;await new Promise(resolve=>setTimeout(resolve,100))}
+throw new Error("Login service is still loading. Refresh the page and try again.");
+}
+$("gymAccountBtn").onclick=async()=>{
+try{
+const clerk=await waitForClerk();await clerk.load();clerkUser=clerk.user||null;
+if(clerkUser){show();await fillProfile()}
+else {hide();clerk.openSignIn({})}
+}catch(e){show();msg(e.message||"Could not open Login. Please refresh and try again.")}
+};
 $("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
-$("gymModeLogin").onclick=()=>{try{Clerk.openSignIn({})}catch(e){msg("Clerk is loading. Please try again.")}};
-$("gymModeSignup").onclick=()=>{try{Clerk.openSignUp({})}catch(e){msg("Clerk is loading. Please try again.")}};
+$("gymModeLogin").onclick=async()=>{try{const clerk=await waitForClerk();await clerk.load();clerk.openSignIn({})}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
+$("gymModeSignup").onclick=async()=>{try{const clerk=await waitForClerk();await clerk.load();clerk.openSignUp({})}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
 ["front","back","right","left"].forEach(side=>{
 const input=$("gymPhoto"+side[0].toUpperCase()+side.slice(1));
 input.onchange=()=>{const f=input.files?.[0];if(!f)return;if(!f.type.startsWith("image/")||f.size>3*1024*1024){msg("Choose an image under 3 MB.");input.value="";return}photoFiles[side]=f;photoUrls[side]=URL.createObjectURL(f);paintPhotoPreviews(cachedProfile)};
