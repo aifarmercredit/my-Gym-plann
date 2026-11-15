@@ -657,7 +657,7 @@ function updateAccountNavigation(isAdmin){
 }
 function buildNav(){
  const headerAccount=document.getElementById("clerkLoginHeader");
- if(headerAccount)headerAccount.addEventListener("click",async()=>{try{await openClerkLoginPage();setActive("account")}catch(err){toast(err.message||"Could not open Clerk Login. Please refresh and try again.");}});
+ if(headerAccount)headerAccount.addEventListener("click",async()=>{try{await window.openClerkLoginPage();setActive("account")}catch(err){toast(err.message||"Could not open Clerk Login. Please refresh and try again.");}});
  const html=NAV.map(n=>'<a href="#'+n[0]+'" data-nav="'+n[0]+'"'+(n[0]==="adminDashboard"?' hidden':'')+'>'+ic(n[2])+'<span>'+n[1]+'</span></a>').join("");
  $("#topNav").innerHTML=html;$("#tabBar").innerHTML=html;
  document.querySelectorAll('[data-nav="account"]').forEach(a=>a.addEventListener("click",async e=>{e.preventDefault();try{await openClerkLoginPage();setActive("account")}catch(err){const page=$("clerkLoginPage");if(page){page.classList.add("active");page.setAttribute("aria-hidden","false");}const mount=$("clerkSignInMount");if(mount)mount.textContent=err.message||"Could not load Clerk Login. Please refresh and try again."}}));
@@ -1050,6 +1050,7 @@ const signInUrl=clerk.buildSignInUrl({signInFallbackRedirectUrl:returnUrl,signUp
 if(!signInUrl)throw new Error("Clerk sign-in URL is not configured. Check Clerk Dashboard sign-in settings.");
 window.location.assign(signInUrl);
 }
+window.openClerkLoginPage=openClerkLoginPage;
 $("clerkLoginClose").onclick=closeClerkLoginPage;
 $("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
 $("gymModeLogin").onclick=async()=>{try{await openClerkLoginPage()}catch(e){msg(e.message||"Clerk is loading. Please try again.")}};
