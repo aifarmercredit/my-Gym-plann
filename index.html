@@ -936,6 +936,7 @@ if ("serviceWorker" in navigator) {
     <div id="clerkSignInMount"></div>
   </div>
 </div>
+<script defer crossorigin="anonymous" src="https://immune-dragon-9875.clerk.accounts.dev/npm/@clerk/ui@1/dist/ui.browser.js" type="text/javascript"></script>
 <script defer crossorigin="anonymous" data-clerk-publishable-key="pk_test_aW1tdW5lLWRyYWdvbi05ODc1LmNsZXJrLmFjY291bnRzLmRldiQ" src="https://cdn.jsdelivr.net/npm/@clerk/clerk-js@5/dist/clerk.browser.js" type="text/javascript"></script>
 <script>
 (()=> {
@@ -1015,7 +1016,7 @@ msg("Signed in as "+(clerkUser.primaryEmailAddress?.emailAddress||clerkUser.id)+
 }
 async function refresh(){
 if(!window.Clerk){setTimeout(refresh,300);return}
-try{await Clerk.load();clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.addListener(()=>{clerkUser=Clerk.user||null;if(clerkUser){closeClerkLoginPage();refresh();}});listenerAttached=true}}catch(e){msg("Clerk failed to load. Please refresh.");return}
+try{await Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.addListener(()=>{clerkUser=Clerk.user||null;if(clerkUser){closeClerkLoginPage();refresh();}});listenerAttached=true}}catch(e){msg("Clerk failed to load. Please refresh.");return}
 if(!clerkUser){window.gymIsAdmin=false;$("adminDashboard").hidden=true;updateAccountNavigation(false);$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
 else await fillProfile();
 }
@@ -1028,7 +1029,7 @@ function closeClerkLoginPage(){
 const page=$("clerkLoginPage");if(page){page.classList.remove("active");page.setAttribute("aria-hidden","true");}
 }
 async function openClerkLoginPage(){
-const clerk=await waitForClerk();await clerk.load();clerkUser=clerk.user||null;
+const clerk=await waitForClerk();await clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});clerkUser=clerk.user||null;
 if(clerkUser){show();await fillProfile();return;}
 hide();
 const page=$("clerkLoginPage");page.classList.add("active");page.setAttribute("aria-hidden","false");
