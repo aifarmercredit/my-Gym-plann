@@ -248,6 +248,8 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 #topNav [data-nav="account"],#topNav [data-nav="adminDashboard"]{border:1px solid rgba(255,138,0,.28);border-radius:999px;padding:8px 12px;background:rgba(255,138,0,.08)}
 #topNav [data-nav="account"] span,#topNav [data-nav="adminDashboard"] span{white-space:nowrap}
 #topNav [hidden],#tabBar [hidden]{display:none!important}
+.clerk-header-login{display:none;flex:none;border:1px solid rgba(255,138,0,.45);border-radius:999px;padding:9px 13px;background:rgba(255,138,0,.12);color:#ffc27a;font-weight:700;font-size:.88rem;white-space:nowrap;cursor:pointer}
+@media(max-width:860px){.clerk-header-login{display:inline-flex;align-items:center;justify-content:center}.topbar{gap:8px}.brand{min-width:0}.brand-name{white-space:nowrap}}
 /* Mobile navigation: keep every item on one horizontally scrollable row */
 @media(max-width:860px){
   #tabBar{
@@ -394,6 +396,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
     <span class="brand-mark"><svg class="ic" aria-hidden="true"><use href="#i-dumbbell"/></svg></span>
     <span class="brand-name">POWER <span>GYM</span></span>
   </a>
+  <button type="button" id="clerkLoginHeader" class="clerk-header-login">Clerk Login</button>
   <nav class="topnav" id="topNav" aria-label="Main navigation"></nav>
 
 
@@ -647,10 +650,14 @@ let toastT;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add
 /* ---------- Navigation ---------- */
 const NAV=[["home","Home","home"],["workouts","Workouts","dumbbell"],["schedule","Schedule","calendar"],["videos","Videos","play"],["progress","Progress","chart"],["timer","Timer","timer"],["contact","Contact","info"],["account","Clerk Login","user"],["adminDashboard","Admin Dashboard","shield"]];
 function updateAccountNavigation(isAdmin){
- document.querySelectorAll('[data-nav="account"]').forEach(a=>{const label=clerkUser?"My Account":"Clerk Login";a.querySelector("span").textContent=label;a.setAttribute("aria-label",label)});
+ const accountLabel=clerkUser?"My Account":"Clerk Login";
+ const headerAccount=document.getElementById("clerkLoginHeader");if(headerAccount){headerAccount.textContent=accountLabel;headerAccount.setAttribute("aria-label",accountLabel);}
+ document.querySelectorAll('[data-nav="account"]').forEach(a=>{const label=accountLabel;a.querySelector("span").textContent=label;a.setAttribute("aria-label",label)});
  document.querySelectorAll('[data-nav="adminDashboard"]').forEach(a=>a.hidden=!isAdmin);
 }
 function buildNav(){
+ const headerAccount=document.getElementById("clerkLoginHeader");
+ if(headerAccount)headerAccount.addEventListener("click",async()=>{try{await openClerkLoginPage();setActive("account")}catch(err){toast(err.message||"Could not open Clerk Login. Please refresh and try again.");}});
  const html=NAV.map(n=>'<a href="#'+n[0]+'" data-nav="'+n[0]+'"'+(n[0]==="adminDashboard"?' hidden':'')+'>'+ic(n[2])+'<span>'+n[1]+'</span></a>').join("");
  $("#topNav").innerHTML=html;$("#tabBar").innerHTML=html;
  document.querySelectorAll('[data-nav="account"]').forEach(a=>a.addEventListener("click",async e=>{e.preventDefault();try{await openClerkLoginPage();setActive("account")}catch(err){const page=$("clerkLoginPage");if(page){page.classList.add("active");page.setAttribute("aria-hidden","false");}const mount=$("clerkSignInMount");if(mount)mount.textContent=err.message||"Could not load Clerk Login. Please refresh and try again."}}));
