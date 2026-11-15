@@ -407,7 +407,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 
 <main>
 <section id="adminDashboard" hidden class="admin-page"><div id="gymAdminPane" class="gym-admin-dashboard">
-  <div class="gym-admin-title"><h3>Admin Dashboard</h3><span class="gym-admin-tag">ADMIN</span></div>
+  <div class="gym-admin-title"><div><h3>Admin Dashboard</h3><p class="gym-note">Administrator email: <strong>amiraliahmed915@gmail.com</strong></p></div><span class="gym-admin-tag">ADMIN · v2.1</span></div>
   <div class="gym-admin-tabs">
     <button type="button" id="gymAdminUsersTab" class="btn sm primary">Users</button>
     <button type="button" id="gymAdminMessagesTab" class="btn sm">Contact Messages</button>
@@ -418,7 +418,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
     <div id="gymAdminList" class="gym-admin-list">Loading users…</div>
   </div>
   <div id="gymAdminMessagesPanel" hidden>
-    <p id="gymAdminMessageCount" class="gym-note">Messages sent from the Contact page</p>
+    <p id="gymAdminMessageCount" class="gym-note">Contact page messages are stored in this private admin inbox. Open a message and use Reply by email to respond to the sender.</p>
     <div id="gymMessagesList" class="gym-admin-list">Loading messages…</div>
   </div>
   <p id="gymAdminStatus" class="gym-note" role="status"></p>
@@ -429,7 +429,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
     <div class="hero-copy">
       <span class="pill"><svg class="ic" aria-hidden="true"><use href="#i-flame"/></svg> Your weekly workout plan</span>
       <h1>Train hard.<br><span class="grad-text">Recover smart.</span></h1>
-      <p class="lead">Five training days, two rest days. Follow today's workout, track every exercise and use safe weights with good form. Progress is saved on this device.</p>
+      <p class="lead" id="heroPlanIntro">Your personalized weekly workout plan, including workout days and rest days, appears below after you sign in. Your saved plan is stored in your profile.</p>
       <div class="hero-actions">
         <button class="btn primary" id="todayButton" data-act="today">Open today's workout</button>
         <a class="btn" href="#schedule"><svg class="ic" aria-hidden="true"><use href="#i-calendar"/></svg> Weekly schedule</a>
@@ -760,6 +760,8 @@ function renderHomePlan(){
  const signedIn=!!window.gymProfileSignedIn;
  section.hidden=!signedIn;
  if(!signedIn){host.innerHTML="";return;}
+ const trainingDays=days.filter(d=>!d.rest).length,restDays=days.filter(d=>d.rest).length;
+ const intro=$("#heroPlanIntro");if(intro)intro.textContent="Your saved plan: "+trainingDays+" workout day(s) and "+restDays+" rest day(s) each week. It is saved in My Profile and shown below.";
  host.innerHTML=days.map(d=>{
   if(d.rest)return '<article class="day-card glass"><div class="dc-top"><span class="emoji">🌙</span><div class="dc-tags"><span class="tag">'+esc(d.day)+'</span><span class="tag">Rest Day</span></div></div><h3>REST DAY</h3><p class="muted small">Recovery</p></article>';
   return '<article class="day-card glass"><div class="dc-top"><span class="emoji">'+esc(d.emoji||"💪")+'</span><div class="dc-tags"><span class="tag">'+esc(d.day)+'</span><span class="tag">Workout</span></div></div><h3>'+esc(d.title||"Workout")+'</h3><p class="muted small">'+esc(d.muscles||"")+'</p><ol class="mini-list">'+(d.exercises||[]).map(x=>'<li>'+esc(x)+'</li>').join("")+'</ol><div class="actions"><a class="btn primary" href="'+adminEscape(videoHrefForDay(d))+'" target="_blank" rel="noopener noreferrer">'+ic("play")+' Video · YouTube</a></div></article>';
