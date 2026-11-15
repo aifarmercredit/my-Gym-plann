@@ -1021,13 +1021,13 @@ if(!clerkUser){window.gymIsAdmin=false;$("adminDashboard").hidden=true;updateAcc
 else await fillProfile();
 }
 async function waitForClerk(){
-for(let i=0;i<100;i++){if(window.Clerk&&typeof window.Clerk.load==="function"&&window.__internal_ClerkUICtor)return window.Clerk;await new Promise(resolve=>setTimeout(resolve,100))}
-throw new Error("Clerk Login UI bundle could not load. Check internet connection and refresh.");
+for(let i=0;i<100;i++){if(window.Clerk&&typeof window.Clerk.load==="function")return window.Clerk;await new Promise(resolve=>setTimeout(resolve,100))}
+throw new Error("Clerk JavaScript failed to load. Check your internet connection and refresh.");
 }
 let clerkLoadPromise=null;
 async function ensureClerkLoaded(){
 const clerk=await waitForClerk();
-if(!clerkLoadPromise){clerkLoadPromise=clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}}).catch(error=>{clerkLoadPromise=null;throw error;});}
+if(!clerkLoadPromise){clerkLoadPromise=clerk.load().catch(error=>{clerkLoadPromise=null;throw error;});}
 await clerkLoadPromise;
 return clerk;
 }
@@ -1038,13 +1038,10 @@ const page=$("clerkLoginPage");if(page){page.classList.remove("active");page.set
 async function openClerkLoginPage(){
 const clerk=await ensureClerkLoaded();clerkUser=clerk.user||null;
 if(clerkUser){show();await fillProfile();return;}
-hide();
-const page=$("clerkLoginPage");page.classList.add("active");page.setAttribute("aria-hidden","false");
-const mount=$("clerkSignInMount");
-if(!clerkSignInMounted){
-clerk.mountSignIn(mount,{fallbackRedirectUrl:window.location.origin+window.location.pathname,signUpFallbackRedirectUrl:window.location.origin+window.location.pathname});
-clerkSignInMounted=true;
-}
+const returnUrl=window.location.origin+window.location.pathname;
+const signInUrl=clerk.buildSignInUrl({signInFallbackRedirectUrl:returnUrl,signUpFallbackRedirectUrl:returnUrl});
+if(!signInUrl)throw new Error("Clerk sign-in URL is not configured. Check Clerk Dashboard sign-in settings.");
+window.location.assign(signInUrl);
 }
 $("clerkLoginClose").onclick=closeClerkLoginPage;
 $("gymClose").onclick=hide;modal.addEventListener("click",e=>{if(e.target===modal)hide()});
