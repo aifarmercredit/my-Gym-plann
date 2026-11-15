@@ -225,7 +225,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 
 /* responsive */
 @media(max-width:860px){
-  .topnav{display:none}.tabbar{display:grid}
+  .topnav{display:none}#topNav{display:none!important}.tabbar{display:grid}
   body{padding-bottom:calc(var(--tabh) + env(safe-area-inset-bottom,0px) + 16px)}
   .hero{grid-template-columns:1fr;gap:22px}
   .timer-card{grid-template-columns:1fr}
@@ -1015,21 +1015,28 @@ if(loaded.isAdmin)loadAdminDashboard();
 msg("Signed in as "+(clerkUser.primaryEmailAddress?.emailAddress||clerkUser.id)+". Edit your profile below.");
 }
 async function refresh(){
-if(!window.Clerk){setTimeout(refresh,300);return}
-try{await Clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});clerkUser=Clerk.user||null;if(!listenerAttached){Clerk.addListener(()=>{clerkUser=Clerk.user||null;if(clerkUser){closeClerkLoginPage();refresh();}});listenerAttached=true}}catch(e){msg("Clerk failed to load. Please refresh.");return}
+let clerk;
+try{clerk=await ensureClerkLoaded();clerkUser=clerk.user||null;if(!listenerAttached){clerk.addListener(()=>{clerkUser=clerk.user||null;if(clerkUser){closeClerkLoginPage();refresh();}});listenerAttached=true}}catch(e){msg("Clerk failed to load: "+(e.message||"Please refresh."));return}
 if(!clerkUser){window.gymIsAdmin=false;$("adminDashboard").hidden=true;updateAccountNavigation(false);$("gymAuthPane").hidden=false;$("gymProfilePane").hidden=true;$("gymModalTitle").textContent="Login";$("gymSubtitle").textContent="Sign in or create an account to access My Account";$("gymToggleText").textContent="New here?";$("gymModeSignup").textContent="Create Account";$("gymModeLogin").textContent="Login";msg("Login or create an account to open My Account.");}
 else await fillProfile();
 }
 async function waitForClerk(){
-for(let i=0;i<80;i++){if(window.Clerk&&typeof window.Clerk.load==="function")return window.Clerk;await new Promise(resolve=>setTimeout(resolve,100))}
-throw new Error("Login service is still loading. Refresh the page and try again.");
+for(let i=0;i<100;i++){if(window.Clerk&&typeof window.Clerk.load==="function"&&window.__internal_ClerkUICtor)return window.Clerk;await new Promise(resolve=>setTimeout(resolve,100))}
+throw new Error("Clerk Login UI bundle could not load. Check internet connection and refresh.");
+}
+let clerkLoadPromise=null;
+async function ensureClerkLoaded(){
+const clerk=await waitForClerk();
+if(!clerkLoadPromise){clerkLoadPromise=clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}}).catch(error=>{clerkLoadPromise=null;throw error;});}
+await clerkLoadPromise;
+return clerk;
 }
 let clerkSignInMounted=false;
 function closeClerkLoginPage(){
 const page=$("clerkLoginPage");if(page){page.classList.remove("active");page.setAttribute("aria-hidden","true");}
 }
 async function openClerkLoginPage(){
-const clerk=await waitForClerk();await clerk.load({ui:{ClerkUI:window.__internal_ClerkUICtor}});clerkUser=clerk.user||null;
+const clerk=await ensureClerkLoaded();clerkUser=clerk.user||null;
 if(clerkUser){show();await fillProfile();return;}
 hide();
 const page=$("clerkLoginPage");page.classList.add("active");page.setAttribute("aria-hidden","false");
