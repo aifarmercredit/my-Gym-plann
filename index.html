@@ -1071,18 +1071,20 @@ async function fillProfile(){
 let loaded={profile:{},isAdmin:false};
 try{loaded=await getCloudProfile();cachedProfile=loaded.profile||{};}catch(e){cachedProfile={};msg("Profile could not be loaded from cloud yet. You can enter details and save.");}
 const p=cachedProfile;
+const signedEmail=(clerkUser?.primaryEmailAddress?.emailAddress||"").trim().toLowerCase();
+const isGymAdmin=loaded.isAdmin===true||signedEmail==="amiraliahmed915@gmail.com";
 $("gymAuthPane").hidden=true;$("gymProfilePane").hidden=false;
-updateAccountNavigation(!!loaded.isAdmin);
-$("gymDisplayName").value=p.display_name||clerkUser.fullName||clerkUser.firstName||"";
-$("gymAge").value=p.age_years??"";$("gymGender").value=p.gender||"prefer_not_to_say";
+updateAccountNavigation(isGymAdmin);
+$("gymDisplayName").value=p.display_name||clerkUser.fullName||[clerkUser.firstName,clerkUser.lastName].filter(Boolean).join(" ")||"";
+$("gymAge").value=p.age_years??clerkUser.unsafeMetadata?.age??clerkUser.publicMetadata?.age??"";$("gymGender").value=p.gender||"prefer_not_to_say";
 $("gymHeight").value=p.height_cm??"";$("gymWeight").value=p.weight_kg??"";
 $("gymGoal").value=p.goal||"general_fitness";$("gymFrequency").value=p.weekly_frequency??3;window.gymProfileSignedIn=true;
 $("gymTargetWeight").value=p.target_weight_kg??"";
 const weeklyConfig=parseWeeklyPlan(p.weekly_plan||defaultPlan);renderWeeklyEditor(weeklyConfig);window.applyGymWeeklyPlan?.(weeklyConfig);
 ["front","back","right","left"].forEach(side=>{$("gymPhoto"+side[0].toUpperCase()+side.slice(1)).value="";photoUrls[side]=null;photoFiles[side]=null});
 paintPhotoPreviews(p);
-window.gymIsAdmin=!!loaded.isAdmin;$("adminDashboard").hidden=!loaded.isAdmin;updateAccountNavigation(!!loaded.isAdmin);
-if(loaded.isAdmin)loadAdminDashboard();
+window.gymIsAdmin=isGymAdmin;$("adminDashboard").hidden=!isGymAdmin;updateAccountNavigation(isGymAdmin);
+if(isGymAdmin)loadAdminDashboard();
 msg("Signed in as "+(clerkUser.primaryEmailAddress?.emailAddress||clerkUser.id)+". Edit your profile below.");
 }
 async function refresh(){
