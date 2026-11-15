@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#09090a">
 <link rel="manifest" href="./manifest.json">
-<title>POWER GYM | Workout Planner v2.1</title><meta name="application-version" content="2.1">
+<title>POWER GYM | Workout Planner v2.2</title><meta name="application-version" content="2.2">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -368,6 +368,17 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 #clerkLoginPage .clerk-login-close{border:1px solid #3f3f46;background:#18181b;color:white;border-radius:12px;padding:10px 14px;font-size:15px}
 #clerkSignInMount{width:100%;display:flex;justify-content:center}
 #clerkSignInMount .cl-rootBox{width:100%}
+
+/* v2.2: stronger mobile profile/planner contrast and clear field labels */
+#gymAccountModal .gym-box,#gymProfilePane{background:#111115!important;color:#f5f5f7!important}
+#gymProfilePane h3,#gymProfilePane .gym-editor-heading strong,#gymProfilePane .gym-plan-day-head strong{color:#fff!important}
+#gymProfilePane .gym-note,#gymProfilePane .gym-form label,#gymProfilePane .gym-plan-day label{color:#d0d0d8!important}
+#gymProfilePane .gym-weekly-editor-wrap{background:#17171c!important;border-color:rgba(255,138,0,.45)!important}
+#gymProfilePane .gym-plan-day{background:#202026!important;border-color:#45454f!important}
+#gymProfilePane .gym-plan-day input,#gymProfilePane .gym-plan-day textarea,#gymProfilePane .gym-form input,#gymProfilePane .gym-form select{background:#0d0d11!important;color:#fff!important;border-color:#555560!important}
+#gymProfilePane .gym-plan-day input::placeholder,#gymProfilePane .gym-plan-day textarea::placeholder{color:#a9a9b4!important}
+#gymProfilePane .gym-rest-toggle{color:#ffc27a!important}
+#gymProfilePane #gymSaveProfile{font-weight:800!important;min-height:54px!important}
 </style>
 </head>
 <body>
@@ -407,7 +418,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 
 <main>
 <section id="adminDashboard" hidden class="admin-page"><div id="gymAdminPane" class="gym-admin-dashboard">
-  <div class="gym-admin-title"><div><h3>Admin Dashboard</h3><p class="gym-note">Administrator email: <strong>amiraliahmed915@gmail.com</strong></p></div><span class="gym-admin-tag">ADMIN · v2.1</span></div>
+  <div class="gym-admin-title"><div><h3>Admin Dashboard</h3><p class="gym-note">Administrator email: <strong>amiraliahmed915@gmail.com</strong></p></div><span class="gym-admin-tag">ADMIN · v2.2</span></div>
   <div class="gym-admin-tabs">
     <button type="button" id="gymAdminUsersTab" class="btn sm primary">Users</button>
     <button type="button" id="gymAdminMessagesTab" class="btn sm">Contact Messages</button>
@@ -440,7 +451,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
   </section>
 
   <section id="homeCustomPlan" hidden>
-    <div class="sec-head"><h2>My Weekly Workout Plan <span class="gym-admin-tag">v2.1</span></h2><p class="muted">Your saved weekly routine. Use the YouTube button to open the exercise video or search.</p></div>
+    <div class="sec-head"><h2>My Weekly Workout Plan <span class="gym-admin-tag">v2.2</span></h2><p class="muted">Your saved weekly routine. Use the YouTube button to open the exercise video or search.</p></div>
     <div id="homePlanGrid" class="grid"></div>
   </section>
 
