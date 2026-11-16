@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#09090a">
 <link rel="manifest" href="./manifest.json">
-<title>POWER GYM | Workout Planner v2.2</title><meta name="application-version" content="2.2">
+<title>POWER GYM | Workout Planner v3.0</title><meta name="application-version" content="3.0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -403,6 +403,11 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 #gymAccountModal #gymProfilePane .gym-plan-day label{color:#e0e0e8!important;opacity:1!important}
 #gymAccountModal #gymProfilePane .gym-plan-day input,#gymAccountModal #gymProfilePane .gym-plan-day textarea,#gymAccountModal #gymProfilePane .gym-form input,#gymAccountModal #gymProfilePane .gym-form select{background:#101014!important;color:#fff!important;border-color:#666672!important;opacity:1!important}
 #gymAccountModal #gymProfilePane .gym-plan-day input::placeholder,#gymAccountModal #gymProfilePane .gym-plan-day textarea::placeholder{color:#b5b5c0!important;opacity:1!important}
+
+/* POWER GYM v3.0 professional admin visibility */
+#adminDashboard:not([hidden]){display:block!important;visibility:visible!important;opacity:1!important}
+#adminDashboard:not([hidden]) .gym-admin-dashboard{display:block!important;visibility:visible!important}
+#topNav [data-nav="adminDashboard"][hidden],#tabBar [data-nav="adminDashboard"][hidden]{display:none!important}
 </style>
 </head>
 <body>
@@ -442,7 +447,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
 
 <main>
 <section id="adminDashboard" hidden class="admin-page"><div id="gymAdminPane" class="gym-admin-dashboard">
-  <div class="gym-admin-title"><div><h3>Admin Dashboard</h3><p class="gym-note">Administrator email: <strong>amiraliahmed915@gmail.com</strong></p></div><span class="gym-admin-tag">ADMIN · v2.2</span></div>
+  <div class="gym-admin-title"><div><h3>Admin Dashboard</h3><p class="gym-note">Administrator email: <strong>amiraliahmed915@gmail.com</strong></p></div><span class="gym-admin-tag">ADMIN · v3.0</span></div>
   <div class="gym-admin-tabs">
     <button type="button" id="gymAdminUsersTab" class="btn sm primary">Users</button>
     <button type="button" id="gymAdminMessagesTab" class="btn sm">Contact Messages</button>
@@ -475,7 +480,7 @@ footer{text-align:center;color:var(--dim);padding:28px 16px;border-top:1px solid
   </section>
 
   <section id="homeCustomPlan" hidden>
-    <div class="sec-head"><h2>My Weekly Workout Plan <span class="gym-admin-tag">v2.2</span></h2><p class="muted">Your saved weekly routine. Use the YouTube button to open the exercise video or search.</p></div>
+    <div class="sec-head"><h2>My Weekly Workout Plan <span class="gym-admin-tag">v3.0</span></h2><p class="muted">Your saved weekly routine. Use the YouTube button to open the exercise video or search.</p></div>
     <div id="homePlanGrid" class="grid"></div>
   </section>
 
@@ -1075,7 +1080,7 @@ const signedEmail=(clerkUser?.primaryEmailAddress?.emailAddress||"").trim().toLo
 const isGymAdmin=loaded.isAdmin===true||signedEmail==="amiraliahmed915@gmail.com";
 $("gymAuthPane").hidden=true;$("gymProfilePane").hidden=false;
 updateAccountNavigation(isGymAdmin);
-$("gymDisplayName").value=p.display_name||clerkUser.fullName||[clerkUser.firstName,clerkUser.lastName].filter(Boolean).join(" ")||"";
+$("gymDisplayName").value=p.display_name||clerkUser.fullName||[clerkUser.firstName,clerkUser.lastName].filter(Boolean).join(" ")||(clerkUser.primaryEmailAddress?.emailAddress||"").split("@")[0]||"";
 $("gymAge").value=p.age_years??clerkUser.unsafeMetadata?.age??clerkUser.publicMetadata?.age??"";$("gymGender").value=p.gender||"prefer_not_to_say";
 $("gymHeight").value=p.height_cm??"";$("gymWeight").value=p.weight_kg??"";
 $("gymGoal").value=p.goal||"general_fitness";$("gymFrequency").value=p.weekly_frequency??3;window.gymProfileSignedIn=true;
@@ -1084,7 +1089,7 @@ const weeklyConfig=parseWeeklyPlan(p.weekly_plan||defaultPlan);renderWeeklyEdito
 ["front","back","right","left"].forEach(side=>{$("gymPhoto"+side[0].toUpperCase()+side.slice(1)).value="";photoUrls[side]=null;photoFiles[side]=null});
 paintPhotoPreviews(p);
 window.gymIsAdmin=isGymAdmin;$("adminDashboard").hidden=!isGymAdmin;updateAccountNavigation(isGymAdmin);
-if(isGymAdmin)loadAdminDashboard();
+if(isGymAdmin){loadAdminDashboard();setActive("adminDashboard");}
 msg("Signed in as "+(clerkUser.primaryEmailAddress?.emailAddress||clerkUser.id)+". Edit your profile below.");
 }
 async function refresh(){
